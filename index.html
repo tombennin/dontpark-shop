@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DontPark.ai - Victory Nissan Dashboard</title>
+    <title>DontPark.ai - Action Nissan Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -15,7 +15,6 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #f8fafc;
             color: #333;
-            line-height: 1.6;
         }
         
         .header {
@@ -72,12 +71,6 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             text-align: center;
             border-left: 4px solid #3b82f6;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
         }
         
         .stat-number {
@@ -112,9 +105,6 @@
             font-weight: 600;
             font-size: 1.2em;
             color: #1e3a8a;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
         
         .booking-card {
@@ -133,7 +123,7 @@
         
         .booking-header {
             display: flex;
-            justify-content: space-between;
+            justify-content: between;
             align-items: flex-start;
             margin-bottom: 15px;
         }
@@ -154,9 +144,14 @@
             margin-bottom: 10px;
         }
         
-        .contact-info {
+        .booking-reference {
             color: #64748b;
             font-size: 0.9em;
+            margin-top: 5px;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-radius: 6px;
+            border-left: 3px solid #3b82f6;
         }
         
         .flight-info {
@@ -189,43 +184,35 @@
             line-height: 1.5;
         }
         
-        .estimated-cost {
-            background: #dcfce7;
-            border: 2px solid #16a34a;
+        .revenue-info {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
             border-radius: 8px;
-            padding: 10px 15px;
-            margin-top: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 12px 15px;
+            margin: 15px 0;
+            font-size: 0.9em;
+            color: #1e40af;
         }
         
-        .cost-label {
-            color: #15803d;
-            font-weight: 600;
-        }
-        
-        .cost-amount {
-            color: #15803d;
-            font-size: 1.1em;
-            font-weight: 700;
+        .revenue-info.completed {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #166534;
         }
         
         .action-buttons {
             display: flex;
             gap: 10px;
             margin-top: 15px;
-            flex-wrap: wrap;
         }
         
         .btn {
-            padding: 10px 16px;
+            padding: 8px 16px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-weight: 500;
             transition: all 0.2s;
-            font-size: 0.9em;
         }
         
         .btn-primary {
@@ -235,7 +222,6 @@
         
         .btn-primary:hover {
             background: #2563eb;
-            transform: translateY(-1px);
         }
         
         .btn-secondary {
@@ -254,7 +240,6 @@
         
         .btn-success:hover {
             background: #059669;
-            transform: translateY(-1px);
         }
         
         .sidebar {
@@ -282,12 +267,6 @@
             padding: 12px;
             border-radius: 10px;
             max-width: 85%;
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
         }
         
         .user-message {
@@ -315,13 +294,6 @@
             border-radius: 8px;
             resize: none;
             height: 60px;
-            transition: border-color 0.2s;
-        }
-        
-        .chat-input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
         
         .quick-actions {
@@ -348,7 +320,6 @@
         .quick-action:hover {
             background: #e2e8f0;
             transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         
         .status-badge {
@@ -384,41 +355,128 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            animation: slideDown 0.3s ease-out;
         }
         
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .concierge-timeline {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            overflow: hidden;
         }
         
-        .booking-count {
+        .timeline-container {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 80px 1fr 60px;
+            gap: 15px;
+            align-items: start;
+        }
+        
+        .timeline-hours {
+            display: flex;
+            flex-direction: column;
+            gap: 50px;
+            padding-top: 10px;
+        }
+        
+        .hour-label {
+            font-weight: 600;
+            color: #64748b;
+            font-size: 0.9em;
+            text-align: right;
+        }
+        
+        .timeline-slots {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .time-slot {
+            min-height: 40px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            align-items: flex-start;
+            background: #f8fafc;
+        }
+        
+        .pickup-block {
             background: #3b82f6;
             color: white;
             padding: 4px 8px;
-            border-radius: 15px;
+            border-radius: 6px;
             font-size: 0.8em;
-            font-weight: 600;
+            min-width: 80px;
+            text-align: center;
         }
         
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .header-content {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
-            
-            .btn {
-                width: 100%;
-            }
+        .pickup-single {
+            background: #10b981;
+        }
+        
+        .pickup-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .pickup-time {
+            font-size: 0.7em;
+            opacity: 0.9;
+        }
+        
+        .staffing-indicators {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-top: 10px;
+        }
+        
+        .staff-indicator {
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1.1em;
+            color: white;
+        }
+        
+        .staff-light {
+            background: #10b981;
+        }
+        
+        .staff-medium {
+            background: #f59e0b;
+        }
+        
+        .staff-heavy {
+            background: #ef4444;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .pickup-person {
+            font-size: 0.6em;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+        
+        .staffing-summary {
+            background: #f0f9ff;
+            border-top: 1px solid #bae6fd;
+            padding: 15px 20px;
+            color: #1e40af;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -428,7 +486,7 @@
             <div class="logo">DontPark.ai</div>
             <div class="shop-info">
                 <div class="claude-badge">Claude AI Powered ✨</div>
-                <div>Victory Nissan - Thompson Lane</div>
+                <div>Action Nissan - Thompson Lane</div>
             </div>
         </div>
     </div>
@@ -459,21 +517,99 @@
             ⚠️ <strong>Flight Alert:</strong> WN 1247 delayed 45 minutes. Sarah's pickup automatically rescheduled.
         </div>
 
+        <!-- Concierge Timeline -->
+        <div class="concierge-timeline">
+            <div class="section-header">Today's Concierge Schedule</div>
+            <div class="timeline-container">
+                <div class="timeline-hours">
+                    <div class="hour-label">12 PM</div>
+                    <div class="hour-label">1 PM</div>
+                    <div class="hour-label">2 PM</div>
+                    <div class="hour-label">3 PM</div>
+                    <div class="hour-label">4 PM</div>
+                    <div class="hour-label">5 PM</div>
+                    <div class="hour-label">6 PM</div>
+                    <div class="hour-label">7 PM</div>
+                </div>
+                <div class="timeline-slots">
+                    <div class="time-slot slot-12"></div>
+                    <div class="time-slot slot-1"></div>
+                    <div class="time-slot slot-2">
+                        <div class="pickup-block pickup-single">
+                            <div class="pickup-name">Sarah M.</div>
+                            <div class="pickup-time">2:15 PM</div>
+                            <div class="pickup-person">Person 1</div>
+                        </div>
+                    </div>
+                    <div class="time-slot slot-3"></div>
+                    <div class="time-slot slot-4">
+                        <div class="pickup-block pickup-single">
+                            <div class="pickup-name">Mike R.</div>
+                            <div class="pickup-time">4:00 PM</div>
+                            <div class="pickup-person">Person 1</div>
+                        </div>
+                        <div class="pickup-block pickup-single">
+                            <div class="pickup-name">Lisa C.</div>
+                            <div class="pickup-time">4:15 PM</div>
+                            <div class="pickup-person">Person 2</div>
+                        </div>
+                        <div class="pickup-block pickup-single">
+                            <div class="pickup-name">Tom W.</div>
+                            <div class="pickup-time">4:30 PM</div>
+                            <div class="pickup-person">Person 1</div>
+                        </div>
+                        <div class="pickup-block pickup-single">
+                            <div class="pickup-name">Amy S.</div>
+                            <div class="pickup-time">4:45 PM</div>
+                            <div class="pickup-person">Person 2</div>
+                        </div>
+                    </div>
+                    <div class="time-slot slot-5">
+                        <div class="pickup-block pickup-single">
+                            <div class="pickup-name">David K.</div>
+                            <div class="pickup-time">5:10 PM</div>
+                            <div class="pickup-person">Person 1</div>
+                        </div>
+                        <div class="pickup-block pickup-single">
+                            <div class="pickup-name">Maria L.</div>
+                            <div class="pickup-time">5:25 PM</div>
+                            <div class="pickup-person">Person 2</div>
+                        </div>
+                    </div>
+                    <div class="time-slot slot-6"></div>
+                    <div class="time-slot slot-7"></div>
+                </div>
+                <div class="staffing-indicators">
+                    <div class="staff-indicator staff-light">1</div>
+                    <div class="staff-indicator staff-light">1</div>
+                    <div class="staff-indicator staff-light">1</div>
+                    <div class="staff-indicator staff-light">1</div>
+                    <div class="staff-indicator staff-medium">2</div>
+                    <div class="staff-indicator staff-medium">2</div>
+                    <div class="staff-indicator staff-light">1</div>
+                    <div class="staff-indicator staff-light">1</div>
+                </div>
+            </div>
+            <div class="staffing-summary">
+                <strong>Total Concierges Needed Today:</strong> 2 people maximum (Person 1 & Person 2)
+            </div>
+        </div>
+
         <div class="main-content">
             <!-- Bookings Section -->
             <div class="bookings-section">
-                <div class="section-header">
-                    Today's Bookings & Services
-                    <div class="booking-count">3 Active</div>
-                </div>
+                <div class="section-header">Today's Bookings & Services</div>
                 
                 <!-- Booking 1 - New -->
                 <div class="booking-card">
                     <div class="booking-header">
                         <div class="customer-info">
                             <div class="customer-name">Sarah Mitchell <span class="status-badge status-new">NEW</span></div>
-                            <div class="vehicle-info">2019 Honda Civic • Silver • TN ABC123</div>
-                            <div class="contact-info">📱 (615) 555-0123 • 📧 sarah.mitchell@email.com</div>
+                            <div class="vehicle-info">2019 Honda Civic • 67,000 miles</div>
+                            <div class="booking-reference">
+                                <strong>DP#:</strong> DP-240814-001 | <strong>Work Order:</strong> 
+                                <input type="text" placeholder="Enter your work order #" style="border: 1px solid #d1d5db; padding: 4px 8px; border-radius: 4px; margin-left: 5px; width: 150px;">
+                            </div>
                         </div>
                     </div>
                     
@@ -484,19 +620,19 @@
                     <div class="claude-diagnosis">
                         <h4>🤖 Claude's Diagnosis</h4>
                         <div class="diagnosis-text">
-                            <strong>Customer described:</strong> "Grinding noise when I turn, especially from parking lots"<br><br>
-                            <strong>Claude's assessment:</strong> Likely CV joint wear. Common in vehicles with 60k+ miles. Symptoms match outer CV joint failure pattern. Recommend inspection of both front CV joints and boots.
-                        </div>
-                        <div class="estimated-cost">
-                            <span class="cost-label">Estimated Cost:</span>
-                            <span class="cost-amount">$280-320 per side</span>
+                            <strong>Customer described:</strong> "Grinding noise when I turn, especially from parking lots"<br>
+                            <strong>Claude's assessment:</strong> Likely CV joint wear. Common in vehicles with 60k+ miles. Symptoms match outer CV joint failure pattern. Recommend inspection of both front CV joints and boots. Estimated repair: $280-320 per side if replacement needed.
                         </div>
                     </div>
                     
+                    <div class="revenue-info">
+                        <strong>Shop Revenue:</strong> $276.00
+                    </div>
+                    
                     <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="confirmBooking('sarah')">✅ Confirm Booking</button>
-                        <button class="btn btn-secondary" onclick="askClaude('cv-joint-questions')">🤖 Ask Claude More</button>
-                        <button class="btn btn-secondary" onclick="callCustomer('sarah')">📞 Call Customer</button>
+                        <button class="btn btn-primary" onclick="confirmBooking('sarah')">Confirm Booking</button>
+                        <button class="btn btn-secondary" onclick="askClaude('cv-joint-questions')">Ask Claude More</button>
+                        <button class="btn btn-secondary" onclick="callCustomer('sarah')">Call Customer</button>
                     </div>
                 </div>
 
@@ -505,8 +641,10 @@
                     <div class="booking-header">
                         <div class="customer-info">
                             <div class="customer-name">Mike Rodriguez <span class="status-badge status-confirmed">CONFIRMED</span></div>
-                            <div class="vehicle-info">2017 Ford F-150 • Blue • TN XYZ789</div>
-                            <div class="contact-info">📱 (615) 555-0456 • 📧 mike.rodriguez@email.com</div>
+                            <div class="vehicle-info">2017 Ford F-150 • 89,000 miles</div>
+                            <div class="booking-reference">
+                                <strong>DP#:</strong> DP-240814-002 | <strong>Work Order:</strong> WO-45782
+                            </div>
                         </div>
                     </div>
                     
@@ -517,18 +655,18 @@
                     <div class="claude-diagnosis">
                         <h4>🤖 Claude's Diagnosis</h4>
                         <div class="diagnosis-text">
-                            <strong>Customer described:</strong> "Truck pulls to the right, steering wheel vibrates"<br><br>
-                            <strong>Claude's assessment:</strong> Alignment issue combined with possible warped brake rotors. Check tire wear patterns first, then test drive to confirm brake rotor warping.
-                        </div>
-                        <div class="estimated-cost">
-                            <span class="cost-label">Estimated Cost:</span>
-                            <span class="cost-amount">$329 total</span>
+                            <strong>Customer described:</strong> "Truck pulls to the right, steering wheel vibrates"<br>
+                            <strong>Claude's assessment:</strong> Alignment issue combined with possible warped brake rotors. Check tire wear patterns first, then test drive to confirm brake rotor warping. Likely needs 4-wheel alignment ($89) and front brake rotor replacement ($240).
                         </div>
                     </div>
                     
+                    <div class="revenue-info">
+                        <strong>Shop Revenue:</strong> $302.68
+                    </div>
+                    
                     <div class="action-buttons">
-                        <button class="btn btn-success" onclick="startService('mike')">🔧 Start Service</button>
-                        <button class="btn btn-secondary" onclick="viewHistory('mike')">💬 View Chat History</button>
+                        <button class="btn btn-success" onclick="startService('mike')">Start Service</button>
+                        <button class="btn btn-secondary" onclick="viewHistory('mike')">View Chat History</button>
                     </div>
                 </div>
 
@@ -537,8 +675,10 @@
                     <div class="booking-header">
                         <div class="customer-info">
                             <div class="customer-name">Jennifer Kim <span class="status-badge status-in-progress">IN PROGRESS</span></div>
-                            <div class="vehicle-info">2020 Toyota RAV4 • White • TN DEF456</div>
-                            <div class="contact-info">📱 (615) 555-0789 • 📧 jennifer.kim@email.com</div>
+                            <div class="vehicle-info">2020 Toyota RAV4 • 43,000 miles</div>
+                            <div class="booking-reference">
+                                <strong>DP#:</strong> DP-240813-015 | <strong>Work Order:</strong> WO-45799
+                            </div>
                         </div>
                     </div>
                     
@@ -549,18 +689,18 @@
                     <div class="claude-diagnosis">
                         <h4>🤖 Service Update</h4>
                         <div class="diagnosis-text">
-                            <strong>Original issue:</strong> "Air conditioning not cooling properly"<br><br>
-                            <strong>Current status:</strong> A/C system diagnosed - low refrigerant due to small leak in condenser. Condenser replacement in progress. Customer approved repair via text.
-                        </div>
-                        <div class="estimated-cost">
-                            <span class="cost-label">Final Cost:</span>
-                            <span class="cost-amount">$420 (Approved)</span>
+                            <strong>Original issue:</strong> "Air conditioning not cooling properly"<br>
+                            <strong>Current status:</strong> A/C system diagnosed - low refrigerant due to small leak in condenser. Condenser replacement in progress. Customer approved $420 repair via text.
                         </div>
                     </div>
                     
+                    <div class="revenue-info completed">
+                        <strong>Final Shop Revenue:</strong> $386.40
+                    </div>
+                    
                     <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="updateCustomer('jennifer')">📱 Update Customer</button>
-                        <button class="btn btn-success" onclick="completeService('jennifer')">✅ Mark Complete</button>
+                        <button class="btn btn-primary" onclick="updateCustomer('jennifer')">Update Customer</button>
+                        <button class="btn btn-success" onclick="completeService('jennifer')">Mark Complete</button>
                     </div>
                 </div>
             </div>
@@ -572,7 +712,7 @@
                     <div class="section-header">Ask Claude Anything</div>
                     <div class="chat-messages" id="claudeChat">
                         <div class="chat-message claude-message">
-                            <strong>Claude:</strong> Hi! I'm here to help with any automotive questions, customer communication, or diagnostic advice. What would you like to know?
+                            <strong>Claude:</strong> Hi! I'm here to help with any automotive questions. What would you like to know?
                         </div>
                     </div>
                     <div class="chat-input-container">
@@ -596,7 +736,7 @@
 
     <script>
         function confirmBooking(customer) {
-            showNotification(`Booking confirmed for ${customer}! Pickup reminder set for 1 hour before scheduled time.`, 'success');
+            alert(`Booking confirmed for ${customer}! Pickup reminder set for 1 hour before scheduled time.`);
             // Update status badge to confirmed
             event.target.closest('.booking-card').querySelector('.status-badge').textContent = 'CONFIRMED';
             event.target.closest('.booking-card').querySelector('.status-badge').className = 'status-badge status-confirmed';
@@ -604,33 +744,30 @@
 
         function askClaude(topic) {
             const responses = {
-                'cv-joint-questions': "For CV joint diagnosis, ask the customer: 1) Does the grinding happen more when turning left or right? 2) Any clicking sounds when backing out of parking spaces? 3) Have they noticed any grease on the inner wheel wells? These details will help confirm which side needs replacement and provide a more accurate estimate."
+                'cv-joint-questions': "Great question! For CV joint diagnosis, ask the customer: 1) Does the grinding happen more when turning left or right? 2) Any clicking sounds when backing out of parking spaces? 3) Have they noticed any grease on the inner wheel wells? These details will help confirm which side needs replacement."
             };
             
             addClaudeMessage(responses[topic] || "I'm here to help with any diagnostic questions!");
         }
 
         function callCustomer(customer) {
-            showNotification(`Calling ${customer}... (This would integrate with your phone system)`, 'info');
+            alert(`Calling ${customer}... (This would integrate with your phone system)`);
         }
 
         function startService(customer) {
-            showNotification(`Service started for ${customer}. Timer activated and customer notified.`, 'success');
-            // Update status to in progress
-            event.target.closest('.booking-card').querySelector('.status-badge').textContent = 'IN PROGRESS';
-            event.target.closest('.booking-card').querySelector('.status-badge').className = 'status-badge status-in-progress';
+            alert(`Service started for ${customer}. Timer activated and customer notified.`);
         }
 
         function viewHistory(customer) {
-            showNotification(`Opening chat history for ${customer}...`, 'info');
+            alert(`Opening chat history for ${customer}...`);
         }
 
         function updateCustomer(customer) {
-            showNotification(`Sending update to ${customer}: "A/C repair in progress, will be ready by 7 AM as scheduled."`, 'success');
+            alert(`Sending update to ${customer}: "A/C repair in progress, will be ready by 7 AM as scheduled."`);
         }
 
         function completeService(customer) {
-            showNotification(`Service marked complete for ${customer}. Customer charged and receipt sent.`, 'success');
+            alert(`Service marked complete for ${customer}. Customer charged and receipt sent.`);
         }
 
         function handleChatKeyPress(event) {
@@ -676,73 +813,36 @@
         }
 
         function generateClaudeResponse(message) {
-            const lower = message.toLowerCase();
+            const responses = [
+                "For that type of issue, I'd recommend checking the most common causes first. What specific symptoms did the customer describe?",
+                "That sounds like a classic case. Here's what I'd suggest checking first, and then the follow-up questions to ask the customer...",
+                "Great question! Based on the symptoms, here are the diagnostic steps I'd recommend, in order of likelihood...",
+                "For customer communication about that repair, I'd suggest explaining it this way: [simple explanation]. Would you like me to draft a text message?"
+            ];
             
-            if (lower.includes('brake') || lower.includes('noise')) {
-                return "For brake noises, ask: 1) When does it happen (braking, turning, backing up)? 2) What type of sound (squealing, grinding, clicking)? 3) How long has it been happening? This helps determine if it's pads, rotors, or CV joints.";
-            } else if (lower.includes('alignment') || lower.includes('pull')) {
-                return "For alignment issues: 1) Check tire wear patterns first 2) Test drive to confirm pulling direction 3) Check tire pressure 4) If confirmed, alignment typically runs $89-129 depending on vehicle type.";
-            } else if (lower.includes('customer') || lower.includes('communication')) {
-                return "For customer communication, I recommend: 1) Explain the issue in simple terms 2) Provide cost estimate upfront 3) Give timeline for completion 4) Send progress updates. Would you like me to draft a message?";
-            } else {
-                const responses = [
-                    "For that type of issue, I'd recommend checking the most common causes first. What specific symptoms did the customer describe?",
-                    "That sounds like a classic case. Here's what I'd suggest checking first, and then the follow-up questions to ask the customer...",
-                    "Great question! Based on the symptoms, here are the diagnostic steps I'd recommend, in order of likelihood...",
-                    "For customer communication about that repair, I'd suggest explaining it this way to keep it simple and clear."
-                ];
-                return responses[Math.floor(Math.random() * responses.length)];
-            }
+            return responses[Math.floor(Math.random() * responses.length)];
         }
 
         // Quick action functions
         function checkFlights() {
-            showNotification("Flight Status:\n✅ WN 1247: Delayed +45 min\n✅ AA 2156: On time\n✅ DL 891: On time", 'info');
+            alert("Flight Status:\n✅ WN 1247: Delayed +45 min\n✅ AA 2156: On time\n✅ DL 891: On time");
         }
 
         function viewSchedule() {
-            showNotification("Tomorrow's Schedule:\n8:00 AM - Jennifer Kim pickup\n10:30 AM - New booking: Tom Wilson\n2:15 PM - New booking: Lisa Chen", 'info');
+            alert("Tomorrow's Schedule:\n8:00 AM - Jennifer Kim pickup\n10:30 AM - New booking: Tom Wilson\n2:15 PM - New booking: Lisa Chen");
         }
 
         function customerFeedback() {
-            showNotification("Recent Reviews:\n⭐⭐⭐⭐⭐ 'Claude's diagnosis was spot on!' - Mike R.\n⭐⭐⭐⭐⭐ 'Saved me $200 vs the dealer' - Sarah M.", 'success');
+            alert("Recent Reviews:\n⭐⭐⭐⭐⭐'Claude's diagnosis was spot on!' - Mike R.\n⭐⭐⭐⭐⭐ 'Saved me $200 vs the dealer' - Sarah M.");
         }
 
         function supportTicket() {
-            showNotification("Opening support ticket system... (This would connect to DontPark support)", 'info');
+            alert("Opening support ticket system... (This would connect to DontPark support)");
         }
 
         function viewEarnings() {
-            showNotification("Monthly Earnings:\nThis Month: $12,450\nLast Month: $11,200\nAverage/booking: $280", 'info');
+            alert("Monthly Earnings:\nThis Month: $12,450\nLast Month: $11,200\nAverage/booking: $280");
         }
-
-        // Notification system
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.innerHTML = `
-                <span>${type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️'}</span>
-                <span>${message.replace(/\n/g, '<br>')}</span>
-            `;
-            
-            const container = document.querySelector('.container');
-            container.insertBefore(notification, container.firstChild);
-            
-            // Auto remove after 5 seconds
-            setTimeout(() => {
-                notification.remove();
-            }, 5000);
-        }
-
-        // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
-            // Auto-refresh stats every 30 seconds (in real implementation)
-            // setInterval(refreshStats, 30000);
-            
-            // Load initial data (in real implementation)
-            // loadBookings();
-            // loadStats();
-        });
     </script>
 </body>
 </html>
