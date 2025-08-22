@@ -1,53 +1,459 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>DontPark.ai - CDN-Free Version</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DontPark.ai</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
-        .box { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; }
-        .success { border-left: 5px solid green; }
-        .error { border-left: 5px solid red; }
-        .warning { border-left: 5px solid orange; }
-        button { padding: 10px 20px; background: blue; color: white; border: none; border-radius: 4px; margin: 5px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+        
+        .shop-info {
+            text-align: right;
+        }
+        
+        .claude-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            text-align: center;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-weight: 500;
+            margin-top: 5px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+        
+        .bookings-section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: #f8fafc;
+            padding: 20px 25px;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 600;
+            font-size: 1.2em;
+            color: #1e3a8a;
+        }
+        
+        .booking-card {
+            padding: 25px;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.2s;
+        }
+        
+        .booking-card:hover {
+            background: #f8fafc;
+        }
+        
+        .booking-card:last-child {
+            border-bottom: none;
+        }
+        
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .customer-info {
+            flex: 1;
+        }
+        
+        .customer-name {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #1e3a8a;
+            margin-bottom: 5px;
+        }
+        
+        .vehicle-info {
+            color: #64748b;
+            margin-bottom: 10px;
+        }
+        
+        .booking-reference {
+            color: #64748b;
+            font-size: 0.9em;
+            margin-top: 5px;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-radius: 6px;
+            border-left: 3px solid #3b82f6;
+        }
+        
+        .flight-info {
+            background: #dbeafe;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            color: #1e40af;
+            margin-bottom: 15px;
+        }
+        
+        .claude-diagnosis {
+            background: #f0f9ff;
+            border: 2px solid #bae6fd;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .claude-diagnosis h4 {
+            color: #1e40af;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .diagnosis-text {
+            color: #374151;
+            line-height: 1.5;
+        }
+        
+        .revenue-info {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin: 15px 0;
+            font-size: 0.9em;
+            color: #1e40af;
+        }
+        
+        .revenue-info.completed {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #166534;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .chat-with-claude {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        
+        .chat-message {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            max-width: 85%;
+        }
+        
+        .user-message {
+            background: #3b82f6;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .claude-message {
+            background: white;
+            border: 1px solid #e2e8f0;
+            margin-right: auto;
+        }
+        
+        .chat-input-container {
+            padding: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .chat-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            resize: none;
+            height: 60px;
+        }
+        
+        .quick-actions {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 25px;
+        }
+        
+        .quick-action {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #374151;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .quick-action:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .status-new {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-confirmed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-in-progress {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .notification {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 1000;
+            color: white;
+            background: #10b981;
+        }
     </style>
 </head>
 <body>
-    <h1>🚀 DontPark.ai - Working Version (No CDN)</h1>
-    
-    <div class="box success">
-        <h3>✅ Status: CDN-Free Mode Active</h3>
-        <p>Using built-in Supabase client (no external dependencies)</p>
+    <div class="connection-status" id="connectionStatus">
+        🔄 Connecting to database...
     </div>
-    
-    <div class="box" id="connectionTest">
-        <h3>Database Connection Test</h3>
-        <p id="connectionStatus">Testing connection...</p>
-        <button onclick="testConnection()">Test Now</button>
-        <button onclick="createTestBooking()">Create Test Booking</button>
-        <button onclick="loadBookings()">Load Bookings</button>
-    </div>
-    
-    <div class="box">
-        <h3>Today's Stats</h3>
-        <div id="stats">
-            <div>📊 Bookings Today: <span id="todayCount">-</span></div>
-            <div>💰 Revenue Today: <span id="todayRevenue">-</span></div>
-            <div>📈 Total Bookings: <span id="totalCount">-</span></div>
+
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">DontPark.ai</div>
+            <div class="shop-info">
+                <div class="claude-badge">Claude AI Powered ✨</div>
+            </div>
         </div>
     </div>
-    
-    <div class="box">
-        <h3>Recent Bookings</h3>
-        <div id="bookingsList">Loading...</div>
-    </div>
-    
-    <div class="box">
-        <h3>Debug Log</h3>
-        <div id="debugLog" style="background: #f5f5f5; padding: 10px; font-family: monospace; white-space: pre-wrap; max-height: 200px; overflow-y: auto;"></div>
+
+    <div class="container">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="todayBookings">-</div>
+                <div class="stat-label">Today's Bookings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="todayRevenue">-</div>
+                <div class="stat-label">Today's Revenue</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalBookings">-</div>
+                <div class="stat-label">Total Bookings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">4.9⭐</div>
+                <div class="stat-label">Average Rating</div>
+            </div>
+        </div>
+
+        <!-- Flight Delay Notification -->
+        <div class="notification" id="flightNotification" style="display: none;">
+            ⚠️ <strong>Flight Alert:</strong> <span id="flightAlertText"></span>
+        </div>
+
+        <div class="main-content">
+            <!-- Bookings Section -->
+            <div class="bookings-section">
+                <div class="section-header">Today's Bookings & Services</div>
+                <div id="bookingsContainer">
+                    <div class="booking-card">
+                        <div style="text-align: center; padding: 40px; color: #64748b;">
+                            <div style="font-size: 3em; margin-bottom: 20px;">📊</div>
+                            <div>Loading bookings from database...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Chat with Claude -->
+                <div class="chat-with-claude">
+                    <div class="section-header">Ask Claude Anything</div>
+                    <div class="chat-messages" id="claudeChat">
+                        <div class="chat-message claude-message">
+                            <strong>Claude:</strong> Hi! I'm here to help with any automotive questions. What would you like to know?
+                        </div>
+                    </div>
+                    <div class="chat-input-container">
+                        <textarea class="chat-input" placeholder="Ask Claude about diagnostics, customer communication, or anything else..." onkeypress="handleChatKeyPress(event)"></textarea>
+                        <button class="btn btn-primary" style="margin-top: 10px; width: 100%;" onclick="sendToClaude()">Ask Claude</button>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <div class="section-header" style="padding: 0; background: none; border: none; margin-bottom: 15px;">Quick Actions</div>
+                    <a href="#" class="quick-action" onclick="refreshData()">🔄 Refresh Data</a>
+                    <a href="#" class="quick-action" onclick="createTestBooking()">➕ Create Test Booking</a>
+                    <a href="#" class="quick-action" onclick="viewAllBookings()">📋 View All Bookings</a>
+                    <a href="#" class="quick-action" onclick="customerFeedback()">⭐ Customer Feedback</a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Built-in Supabase client (no CDN required)
+        // Built-in Supabase client (same as before)
         class SimpleSupabaseClient {
             constructor(url, key) {
                 this.url = url;
@@ -79,14 +485,6 @@
             insert(data) {
                 return new SupabaseQuery(this.baseUrl, this.headers, this.table, 'INSERT', '*', data);
             }
-            
-            update(data) {
-                return new SupabaseQuery(this.baseUrl, this.headers, this.table, 'UPDATE', '*', data);
-            }
-            
-            delete() {
-                return new SupabaseQuery(this.baseUrl, this.headers, this.table, 'DELETE');
-            }
         }
         
         class SupabaseQuery {
@@ -100,11 +498,6 @@
                 this.filters = [];
                 this.orderBy = null;
                 this.limitCount = null;
-            }
-            
-            eq(column, value) {
-                this.filters.push(`${column}=eq.${value}`);
-                return this;
             }
             
             order(column, options = {}) {
@@ -125,10 +518,6 @@
                     
                     if (this.method === 'SELECT') {
                         if (this.columns !== '*') params.append('select', this.columns);
-                        this.filters.forEach(filter => {
-                            const [key, value] = filter.split('=');
-                            params.append(key, value);
-                        });
                         if (this.orderBy) params.append('order', this.orderBy);
                         if (this.limitCount) params.append('limit', this.limitCount);
                     }
@@ -137,17 +526,13 @@
                     const fetchUrl = queryString ? `${url}?${queryString}` : url;
                     
                     const options = {
-                        method: this.method === 'SELECT' ? 'GET' : 
-                               this.method === 'INSERT' ? 'POST' :
-                               this.method === 'UPDATE' ? 'PATCH' : 'DELETE',
+                        method: this.method === 'SELECT' ? 'GET' : 'POST',
                         headers: this.headers
                     };
                     
-                    if (this.data && (this.method === 'INSERT' || this.method === 'UPDATE')) {
+                    if (this.data && this.method === 'INSERT') {
                         options.body = JSON.stringify(this.data);
                     }
-                    
-                    log(`Making ${options.method} request to: ${fetchUrl}`);
                     
                     const response = await fetch(fetchUrl, options);
                     const result = await response.text();
@@ -179,90 +564,137 @@
             }
         }
         
-        // Initialize our custom Supabase client
+        // Initialize Supabase
         const supabase = new SimpleSupabaseClient(
             'https://uhrhukcovvvbmopvoncr.supabase.co',
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocmh1a2NvdnZ2Ym1vcHZvbmNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MzIyMzcsImV4cCI6MjA3MDEwODIzN30.Ce69ktLB8h_OMe0H1XpDmRjKZawGlb59ProIs8UEaRw'
         );
         
+        // Global variables
+        let allBookings = [];
+        
         // Utility functions
-        const debugLog = document.getElementById('debugLog');
-        
-        function log(message) {
-            const timestamp = new Date().toLocaleTimeString();
-            const logMessage = `[${timestamp}] ${message}`;
-            console.log(logMessage);
-            debugLog.textContent += logMessage + '\n';
-            debugLog.scrollTop = debugLog.scrollHeight;
-        }
-        
-        function updateStatus(elementId, message, isSuccess = true) {
-            const element = document.getElementById(elementId);
-            element.textContent = message;
-            element.style.color = isSuccess ? 'green' : 'red';
-        }
-        
-        // Main functions
-        async function testConnection() {
-            log('🧪 Testing database connection...');
-            updateStatus('connectionStatus', 'Testing...', true);
+        function updateConnectionStatus(message, isSuccess = true) {
+            const status = document.getElementById('connectionStatus');
+            status.textContent = message;
+            status.style.background = isSuccess ? '#10b981' : '#ef4444';
             
-            try {
-                const { data, error } = await supabase
-                    .from('bookings')
-                    .select('count')
-                    .limit(1)
-                    .execute();
-                
-                if (error) {
-                    log(`❌ Connection failed: ${error.message}`);
-                    updateStatus('connectionStatus', `❌ Connection failed: ${error.message}`, false);
-                } else {
-                    log('✅ Database connection successful!');
-                    updateStatus('connectionStatus', '✅ Database connected successfully!', true);
-                    loadStats();
-                }
-            } catch (error) {
-                log(`❌ Connection error: ${error.message}`);
-                updateStatus('connectionStatus', `❌ Error: ${error.message}`, false);
+            // Auto-hide after 3 seconds if successful
+            if (isSuccess) {
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 3000);
             }
         }
         
-        async function loadBookings() {
-            log('📊 Loading bookings...');
+        // Data loading functions
+        async function loadAllData() {
+            updateConnectionStatus('🔄 Loading data...');
             
             try {
                 const { data, error } = await supabase
                     .from('bookings')
                     .select('*')
-                    .order('created_at')
-                    .limit(5)
+                    .order('created_at', { ascending: false })
                     .execute();
                 
                 if (error) {
-                    log(`❌ Error loading bookings: ${error.message}`);
-                    document.getElementById('bookingsList').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
-                } else {
-                    log(`✅ Loaded ${data?.length || 0} bookings`);
-                    displayBookings(data || []);
+                    console.error('Error loading bookings:', error);
+                    updateConnectionStatus('❌ Database error: ' + error.message, false);
+                    return;
                 }
+                
+                allBookings = data || [];
+                updateStats();
+                displayBookings();
+                updateConnectionStatus('✅ Data loaded successfully');
+                
             } catch (error) {
-                log(`❌ Exception loading bookings: ${error.message}`);
-                document.getElementById('bookingsList').innerHTML = `<p style="color: red;">Exception: ${error.message}</p>`;
+                console.error('Error:', error);
+                updateConnectionStatus('❌ Connection failed', false);
             }
         }
         
-        async function createTestBooking() {
-            log('➕ Creating test booking...');
+        function updateStats() {
+            const today = new Date().toISOString().split('T')[0];
+            const todayBookings = allBookings.filter(b => b.created_at?.startsWith(today));
             
+            document.getElementById('todayBookings').textContent = todayBookings.length;
+            document.getElementById('todayRevenue').textContent = '$' + (todayBookings.length * 280);
+            document.getElementById('totalBookings').textContent = allBookings.length;
+        }
+        
+        function displayBookings() {
+            const container = document.getElementById('bookingsContainer');
+            
+            if (!allBookings || allBookings.length === 0) {
+                container.innerHTML = `
+                    <div class="booking-card">
+                        <div style="text-align: center; padding: 40px; color: #64748b;">
+                            <div style="font-size: 3em; margin-bottom: 20px;">📭</div>
+                            <div>No bookings found</div>
+                            <button class="btn btn-primary" onclick="createTestBooking()" style="margin-top: 20px;">Create Test Booking</button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            const bookingsHTML = allBookings.slice(0, 5).map(booking => `
+                <div class="booking-card">
+                    <div class="booking-header">
+                        <div class="customer-info">
+                            <div class="customer-name">
+                                ${booking.customer_name || 'Unknown Customer'} 
+                                <span class="status-badge status-${booking.status || 'new'}">${(booking.status || 'NEW').toUpperCase()}</span>
+                            </div>
+                            <div class="vehicle-info">${booking.vehicle_info || 'No vehicle info'}</div>
+                            <div class="booking-reference">
+                                <strong>Booking ID:</strong> ${booking.id || 'N/A'} | 
+                                <strong>Created:</strong> ${new Date(booking.created_at).toLocaleDateString()}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${booking.flight_info ? `
+                        <div class="flight-info">
+                            ✈️ <strong>Flight:</strong> ${booking.flight_info}
+                        </div>
+                    ` : ''}
+                    
+                    <div class="claude-diagnosis">
+                        <h4>🤖 Issue Description</h4>
+                        <div class="diagnosis-text">
+                            ${booking.issue_description || 'No description provided'}
+                        </div>
+                    </div>
+                    
+                    <div class="revenue-info">
+                        <strong>Estimated Revenue:</strong> $280.00
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="updateBooking(${booking.id})">Update Status</button>
+                        <button class="btn btn-secondary" onclick="viewDetails(${booking.id})">View Details</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = bookingsHTML;
+        }
+        
+        // Action functions
+        async function createTestBooking() {
             const testBooking = {
                 customer_name: 'Test Customer ' + Math.floor(Math.random() * 1000),
-                vehicle_info: '2020 Test Car',
-                issue_description: 'Test issue created at ' + new Date().toLocaleString(),
-                flight_info: 'TEST' + Math.floor(Math.random() * 1000),
+                vehicle_info: '2020 Honda Civic • 65,000 miles',
+                issue_description: 'Strange noise when turning, especially in parking lots. Created at ' + new Date().toLocaleString(),
+                flight_info: 'SW' + Math.floor(Math.random() * 9000 + 1000),
                 status: 'new',
                 created_at: new Date().toISOString()
             };
+            
+            updateConnectionStatus('➕ Creating test booking...');
             
             try {
                 const { data, error } = await supabase
@@ -271,71 +703,98 @@
                     .execute();
                 
                 if (error) {
-                    log(`❌ Error creating booking: ${error.message}`);
-                    alert(`Error: ${error.message}`);
+                    updateConnectionStatus('❌ Error creating booking: ' + error.message, false);
                 } else {
-                    log('✅ Test booking created successfully!');
-                    alert('✅ Test booking created!');
-                    loadBookings();
-                    loadStats();
+                    updateConnectionStatus('✅ Test booking created!');
+                    loadAllData(); // Refresh data
                 }
             } catch (error) {
-                log(`❌ Exception creating booking: ${error.message}`);
-                alert(`Exception: ${error.message}`);
+                updateConnectionStatus('❌ Error: ' + error.message, false);
             }
         }
         
-        async function loadStats() {
-            try {
-                const { data, error } = await supabase
-                    .from('bookings')
-                    .select('*')
-                    .execute();
-                
-                if (error) {
-                    log(`❌ Error loading stats: ${error.message}`);
-                } else {
-                    const total = data?.length || 0;
-                    const today = new Date().toISOString().split('T')[0];
-                    const todayBookings = data?.filter(b => b.created_at?.startsWith(today)) || [];
-                    
-                    document.getElementById('totalCount').textContent = total;
-                    document.getElementById('todayCount').textContent = todayBookings.length;
-                    document.getElementById('todayRevenue').textContent = '$' + (todayBookings.length * 280);
-                    
-                    log(`📊 Stats updated: ${total} total, ${todayBookings.length} today`);
-                }
-            } catch (error) {
-                log(`❌ Stats error: ${error.message}`);
+        function refreshData() {
+            loadAllData();
+        }
+        
+        function viewAllBookings() {
+            alert(`Total bookings: ${allBookings.length}\n\nRecent bookings:\n${allBookings.slice(0, 3).map(b => `• ${b.customer_name}: ${b.issue_description?.substring(0, 50)}...`).join('\n')}`);
+        }
+        
+        function updateBooking(id) {
+            alert(`Would update booking #${id} status`);
+        }
+        
+        function viewDetails(id) {
+            const booking = allBookings.find(b => b.id === id);
+            if (booking) {
+                alert(`Booking Details:\n\nCustomer: ${booking.customer_name}\nVehicle: ${booking.vehicle_info}\nIssue: ${booking.issue_description}\nStatus: ${booking.status}\nCreated: ${new Date(booking.created_at).toLocaleString()}`);
             }
         }
         
-        function displayBookings(bookings) {
-            const container = document.getElementById('bookingsList');
-            
-            if (!bookings || bookings.length === 0) {
-                container.innerHTML = '<p>No bookings found. Try creating a test booking!</p>';
-                return;
-            }
-            
-            const html = bookings.map(booking => `
-                <div style="border: 1px solid #ddd; padding: 10px; margin: 5px 0; border-radius: 4px;">
-                    <strong>${booking.customer_name || 'Unknown'}</strong><br>
-                    <small>${booking.vehicle_info || 'No vehicle info'}</small><br>
-                    <em>${booking.issue_description || 'No description'}</em><br>
-                    <span style="color: #666;">Status: ${booking.status || 'unknown'}</span>
-                </div>
-            `).join('');
-            
-            container.innerHTML = html;
+        function customerFeedback() {
+            alert("Recent Reviews:\n⭐⭐⭐⭐⭐ 'Quick and professional service!' - Recent Customer\n⭐⭐⭐⭐⭐ 'Saved me time and money!' - Happy Client");
         }
         
-        // Initialize
-        log('🚀 DontPark.ai CDN-Free version loaded');
-        log('✅ Custom Supabase client ready');
+        // Chat functions
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendToClaude();
+            }
+        }
         
-        // Auto-test connection on load
-        setTimeout(testConnection, 1000);
+        function sendToClaude() {
+            const input = document.querySelector('.chat-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addUserMessage(message);
+            input.value = '';
+            
+            setTimeout(() => {
+                const response = generateClaudeResponse(message);
+                addClaudeMessage(response);
+            }, 1000);
+        }
+        
+        function addUserMessage(message) {
+            const chatContainer = document.getElementById('claudeChat');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message user-message';
+            messageDiv.innerHTML = `<strong>You:</strong> ${message}`;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        function addClaudeMessage(message) {
+            const chatContainer = document.getElementById('claudeChat');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message claude-message';
+            messageDiv.innerHTML = `<strong>Claude:</strong> ${message}`;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        function generateClaudeResponse(message) {
+            const responses = [
+                "For that type of issue, I'd recommend checking the most common causes first. What specific symptoms did the customer describe?",
+                "That sounds like a classic case. Here's what I'd suggest checking first, and then the follow-up questions to ask the customer...",
+                "Based on your current bookings, I can see some patterns. Would you like me to analyze the common issues and suggest preventive maintenance recommendations?",
+                "Great question! For customer communication about that repair, I'd suggest explaining it this way to build trust and transparency..."
+            ];
+            
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+        
+        // Initialize app
+        console.log('🚀 DontPark.ai dashboard initializing...');
+        
+        // Load data when page loads
+        window.addEventListener('load', function() {
+            setTimeout(loadAllData, 500);
+        });
     </script>
 </body>
 </html>
