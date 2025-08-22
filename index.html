@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -727,27 +727,26 @@
                     <a href="#" class="quick-action" onclick="checkFlights()">✈️ Check Flight Status</a>
                     <a href="#" class="quick-action" onclick="viewSchedule()">📅 View Tomorrow's Schedule</a>
                     <a href="#" class="quick-action" onclick="customerFeedback()">⭐ Customer Feedback</a>
-                    <a href="#" class="quick-action" onclick="supportTicket()">🎫 Contact DontPark Support</a>
-                    <a href="#" class="quick-action" onclick="viewEarnings()">💰 View Monthly Earnings</a>
-                </div>
-            </div>
-        </div>
-    </div>
- <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
- <script>
-// ============================================
-// SUPABASE CONFIGURATION 
-// ============================================
-const SUPABASE_URL = 'https://uhrhukcovvvbmopvoncr.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocmh1a2NvdnZ2Ym1vcHZvbmNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MzIyMzcsImV4cCI6MjA3MDEwODIzN30.Ce69ktLB8h_OMe0H1XpDmRjKZawGlb59ProIs8UEaRw';
-
-// Create global supabase client
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-console.log('Supabase client initialized:', supabase);
-
-// Load real bookings from Supabase
-async function loadBookings() {
-    try {
+<script>
+// Wait for Supabase to load
+window.addEventListener('load', function() {
+    console.log('Page loaded, checking Supabase...');
+    console.log('createClient type:', typeof createClient);
+    
+    // ============================================
+    // SUPABASE CONFIGURATION 
+    // ============================================
+    const SUPABASE_URL = 'https://uhrhukcovvvbmopvoncr.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocmh1a2NvdnZ2Ym1vcHZvbmNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MzIyMzcsImV4cCI6MjA3MDEwODIzN30.Ce69ktLB8h_OMe0H1XpDmRjKZawGlb59ProIs8UEaRw';
+    
+    // Create global supabase client
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('Supabase client initialized:', supabase);
+    
+    // Load real bookings from Supabase
+    async function loadBookings() {
+        try {
+            // ... rest of your existing code continues here
         const { data: bookings, error } = await supabase
             .from('bookings')
             .select('*')
