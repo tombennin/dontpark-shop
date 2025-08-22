@@ -1,116 +1,341 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DontPark.ai - Self-Hosted Supabase</title>
-    <!-- Your existing styles here -->
+    <title>DontPark.ai - CDN-Free Version</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .box { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; }
+        .success { border-left: 5px solid green; }
+        .error { border-left: 5px solid red; }
+        .warning { border-left: 5px solid orange; }
+        button { padding: 10px 20px; background: blue; color: white; border: none; border-radius: 4px; margin: 5px; }
+    </style>
 </head>
 <body>
-    <!-- Your existing HTML content -->
+    <h1>🚀 DontPark.ai - Working Version (No CDN)</h1>
     
-    <!-- Self-hosted Supabase - Download and host locally -->
+    <div class="box success">
+        <h3>✅ Status: CDN-Free Mode Active</h3>
+        <p>Using built-in Supabase client (no external dependencies)</p>
+    </div>
+    
+    <div class="box" id="connectionTest">
+        <h3>Database Connection Test</h3>
+        <p id="connectionStatus">Testing connection...</p>
+        <button onclick="testConnection()">Test Now</button>
+        <button onclick="createTestBooking()">Create Test Booking</button>
+        <button onclick="loadBookings()">Load Bookings</button>
+    </div>
+    
+    <div class="box">
+        <h3>Today's Stats</h3>
+        <div id="stats">
+            <div>📊 Bookings Today: <span id="todayCount">-</span></div>
+            <div>💰 Revenue Today: <span id="todayRevenue">-</span></div>
+            <div>📈 Total Bookings: <span id="totalCount">-</span></div>
+        </div>
+    </div>
+    
+    <div class="box">
+        <h3>Recent Bookings</h3>
+        <div id="bookingsList">Loading...</div>
+    </div>
+    
+    <div class="box">
+        <h3>Debug Log</h3>
+        <div id="debugLog" style="background: #f5f5f5; padding: 10px; font-family: monospace; white-space: pre-wrap; max-height: 200px; overflow-y: auto;"></div>
+    </div>
+
     <script>
-        // Inline Supabase client (minimal version)
-        // This is a backup if CDNs fail
-        
-        async function createSupabaseClient(supabaseUrl, supabaseKey) {
-            // Simple fetch-based Supabase client
-            return {
-                from: (table) => ({
-                    select: (columns = '*') => ({
-                        eq: (column, value) => executeQuery('SELECT', table, columns, { [column]: value }),
-                        order: (column, options = {}) => executeQuery('SELECT', table, columns, null, { orderBy: column, ...options }),
-                        insert: (data) => executeQuery('INSERT', table, '*', data),
-                        update: (data) => executeQuery('UPDATE', table, '*', data),
-                        delete: () => executeQuery('DELETE', table)
-                    })
-                })
-            };
-            
-            async function executeQuery(method, table, columns, data, options = {}) {
-                const url = `${supabaseUrl}/rest/v1/${table}`;
-                const headers = {
-                    'apikey': supabaseKey,
-                    'Authorization': `Bearer ${supabaseKey}`,
+        // Built-in Supabase client (no CDN required)
+        class SimpleSupabaseClient {
+            constructor(url, key) {
+                this.url = url;
+                this.key = key;
+                this.headers = {
+                    'apikey': key,
+                    'Authorization': `Bearer ${key}`,
                     'Content-Type': 'application/json',
                     'Prefer': 'return=representation'
                 };
-                
-                let fetchUrl = url;
-                let fetchOptions = { method: 'GET', headers };
-                
-                if (method === 'SELECT') {
-                    const params = new URLSearchParams();
-                    if (columns !== '*') params.append('select', columns);
-                    if (data) {
-                        Object.entries(data).forEach(([key, value]) => {
-                            params.append(key, `eq.${value}`);
-                        });
-                    }
-                    if (options.orderBy) {
-                        params.append('order', options.orderBy + (options.ascending === false ? '.desc' : '.asc'));
-                    }
-                    if (params.toString()) fetchUrl += '?' + params.toString();
-                }
-                
-                if (method === 'INSERT') {
-                    fetchOptions.method = 'POST';
-                    fetchOptions.body = JSON.stringify(data);
-                }
-                
+            }
+            
+            from(table) {
+                return new SupabaseTable(this.url, this.headers, table);
+            }
+        }
+        
+        class SupabaseTable {
+            constructor(baseUrl, headers, table) {
+                this.baseUrl = baseUrl;
+                this.headers = headers;
+                this.table = table;
+            }
+            
+            select(columns = '*') {
+                return new SupabaseQuery(this.baseUrl, this.headers, this.table, 'SELECT', columns);
+            }
+            
+            insert(data) {
+                return new SupabaseQuery(this.baseUrl, this.headers, this.table, 'INSERT', '*', data);
+            }
+            
+            update(data) {
+                return new SupabaseQuery(this.baseUrl, this.headers, this.table, 'UPDATE', '*', data);
+            }
+            
+            delete() {
+                return new SupabaseQuery(this.baseUrl, this.headers, this.table, 'DELETE');
+            }
+        }
+        
+        class SupabaseQuery {
+            constructor(baseUrl, headers, table, method, columns = '*', data = null) {
+                this.baseUrl = baseUrl;
+                this.headers = headers;
+                this.table = table;
+                this.method = method;
+                this.columns = columns;
+                this.data = data;
+                this.filters = [];
+                this.orderBy = null;
+                this.limitCount = null;
+            }
+            
+            eq(column, value) {
+                this.filters.push(`${column}=eq.${value}`);
+                return this;
+            }
+            
+            order(column, options = {}) {
+                const direction = options.ascending === false ? 'desc' : 'asc';
+                this.orderBy = `${column}.${direction}`;
+                return this;
+            }
+            
+            limit(count) {
+                this.limitCount = count;
+                return this;
+            }
+            
+            async execute() {
                 try {
-                    const response = await fetch(fetchUrl, fetchOptions);
-                    const result = await response.json();
+                    const url = `${this.baseUrl}/rest/v1/${this.table}`;
+                    const params = new URLSearchParams();
+                    
+                    if (this.method === 'SELECT') {
+                        if (this.columns !== '*') params.append('select', this.columns);
+                        this.filters.forEach(filter => {
+                            const [key, value] = filter.split('=');
+                            params.append(key, value);
+                        });
+                        if (this.orderBy) params.append('order', this.orderBy);
+                        if (this.limitCount) params.append('limit', this.limitCount);
+                    }
+                    
+                    const queryString = params.toString();
+                    const fetchUrl = queryString ? `${url}?${queryString}` : url;
+                    
+                    const options = {
+                        method: this.method === 'SELECT' ? 'GET' : 
+                               this.method === 'INSERT' ? 'POST' :
+                               this.method === 'UPDATE' ? 'PATCH' : 'DELETE',
+                        headers: this.headers
+                    };
+                    
+                    if (this.data && (this.method === 'INSERT' || this.method === 'UPDATE')) {
+                        options.body = JSON.stringify(this.data);
+                    }
+                    
+                    log(`Making ${options.method} request to: ${fetchUrl}`);
+                    
+                    const response = await fetch(fetchUrl, options);
+                    const result = await response.text();
                     
                     if (!response.ok) {
-                        return { data: null, error: result };
+                        let errorData;
+                        try {
+                            errorData = JSON.parse(result);
+                        } catch {
+                            errorData = { message: result || 'Unknown error' };
+                        }
+                        return { data: null, error: errorData };
                     }
                     
-                    return { data: result, error: null };
+                    let data = null;
+                    if (result) {
+                        try {
+                            data = JSON.parse(result);
+                        } catch {
+                            data = result;
+                        }
+                    }
+                    
+                    return { data, error: null };
+                    
                 } catch (error) {
                     return { data: null, error: { message: error.message } };
                 }
             }
         }
         
-        // Initialize with backup client
-        async function initializeSupabase() {
-            const SUPABASE_URL = 'https://uhrhukcovvvbmopvoncr.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocmh1a2NvdnZ2Ym1vcHZvbmNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MzIyMzcsImV4cCI6MjA3MDEwODIzN30.Ce69ktLB8h_OMe0H1XpDmRjKZawGlb59ProIs8UEaRw';
-            
-            // Try official Supabase first
-            if (typeof createClient !== 'undefined') {
-                console.log('✅ Using official Supabase client');
-                return createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            }
-            
-            // Fallback to our custom client
-            console.log('⚠️ Using backup Supabase client');
-            return await createSupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Initialize our custom Supabase client
+        const supabase = new SimpleSupabaseClient(
+            'https://uhrhukcovvvbmopvoncr.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocmh1a2NvdnZ2Ym1vcHZvbmNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MzIyMzcsImV4cCI6MjA3MDEwODIzN30.Ce69ktLB8h_OMe0H1XpDmRjKZawGlb59ProIs8UEaRw'
+        );
+        
+        // Utility functions
+        const debugLog = document.getElementById('debugLog');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}`;
+            console.log(logMessage);
+            debugLog.textContent += logMessage + '\n';
+            debugLog.scrollTop = debugLog.scrollHeight;
         }
         
-        // Your app code
-        window.addEventListener('load', async function() {
+        function updateStatus(elementId, message, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.color = isSuccess ? 'green' : 'red';
+        }
+        
+        // Main functions
+        async function testConnection() {
+            log('🧪 Testing database connection...');
+            updateStatus('connectionStatus', 'Testing...', true);
+            
             try {
-                const supabase = await initializeSupabase();
-                console.log('Supabase client ready:', supabase);
-                
-                // Test connection
                 const { data, error } = await supabase
                     .from('bookings')
-                    .select('count');
+                    .select('count')
+                    .limit(1)
+                    .execute();
                 
                 if (error) {
-                    console.error('Connection test failed:', error);
+                    log(`❌ Connection failed: ${error.message}`);
+                    updateStatus('connectionStatus', `❌ Connection failed: ${error.message}`, false);
                 } else {
-                    console.log('✅ Database connected successfully!', data);
+                    log('✅ Database connection successful!');
+                    updateStatus('connectionStatus', '✅ Database connected successfully!', true);
+                    loadStats();
                 }
-                
             } catch (error) {
-                console.error('Initialization failed:', error);
+                log(`❌ Connection error: ${error.message}`);
+                updateStatus('connectionStatus', `❌ Error: ${error.message}`, false);
             }
-        });
+        }
+        
+        async function loadBookings() {
+            log('📊 Loading bookings...');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('bookings')
+                    .select('*')
+                    .order('created_at')
+                    .limit(5)
+                    .execute();
+                
+                if (error) {
+                    log(`❌ Error loading bookings: ${error.message}`);
+                    document.getElementById('bookingsList').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+                } else {
+                    log(`✅ Loaded ${data?.length || 0} bookings`);
+                    displayBookings(data || []);
+                }
+            } catch (error) {
+                log(`❌ Exception loading bookings: ${error.message}`);
+                document.getElementById('bookingsList').innerHTML = `<p style="color: red;">Exception: ${error.message}</p>`;
+            }
+        }
+        
+        async function createTestBooking() {
+            log('➕ Creating test booking...');
+            
+            const testBooking = {
+                customer_name: 'Test Customer ' + Math.floor(Math.random() * 1000),
+                vehicle_info: '2020 Test Car',
+                issue_description: 'Test issue created at ' + new Date().toLocaleString(),
+                flight_info: 'TEST' + Math.floor(Math.random() * 1000),
+                status: 'new',
+                created_at: new Date().toISOString()
+            };
+            
+            try {
+                const { data, error } = await supabase
+                    .from('bookings')
+                    .insert([testBooking])
+                    .execute();
+                
+                if (error) {
+                    log(`❌ Error creating booking: ${error.message}`);
+                    alert(`Error: ${error.message}`);
+                } else {
+                    log('✅ Test booking created successfully!');
+                    alert('✅ Test booking created!');
+                    loadBookings();
+                    loadStats();
+                }
+            } catch (error) {
+                log(`❌ Exception creating booking: ${error.message}`);
+                alert(`Exception: ${error.message}`);
+            }
+        }
+        
+        async function loadStats() {
+            try {
+                const { data, error } = await supabase
+                    .from('bookings')
+                    .select('*')
+                    .execute();
+                
+                if (error) {
+                    log(`❌ Error loading stats: ${error.message}`);
+                } else {
+                    const total = data?.length || 0;
+                    const today = new Date().toISOString().split('T')[0];
+                    const todayBookings = data?.filter(b => b.created_at?.startsWith(today)) || [];
+                    
+                    document.getElementById('totalCount').textContent = total;
+                    document.getElementById('todayCount').textContent = todayBookings.length;
+                    document.getElementById('todayRevenue').textContent = '$' + (todayBookings.length * 280);
+                    
+                    log(`📊 Stats updated: ${total} total, ${todayBookings.length} today`);
+                }
+            } catch (error) {
+                log(`❌ Stats error: ${error.message}`);
+            }
+        }
+        
+        function displayBookings(bookings) {
+            const container = document.getElementById('bookingsList');
+            
+            if (!bookings || bookings.length === 0) {
+                container.innerHTML = '<p>No bookings found. Try creating a test booking!</p>';
+                return;
+            }
+            
+            const html = bookings.map(booking => `
+                <div style="border: 1px solid #ddd; padding: 10px; margin: 5px 0; border-radius: 4px;">
+                    <strong>${booking.customer_name || 'Unknown'}</strong><br>
+                    <small>${booking.vehicle_info || 'No vehicle info'}</small><br>
+                    <em>${booking.issue_description || 'No description'}</em><br>
+                    <span style="color: #666;">Status: ${booking.status || 'unknown'}</span>
+                </div>
+            `).join('');
+            
+            container.innerHTML = html;
+        }
+        
+        // Initialize
+        log('🚀 DontPark.ai CDN-Free version loaded');
+        log('✅ Custom Supabase client ready');
+        
+        // Auto-test connection on load
+        setTimeout(testConnection, 1000);
     </script>
 </body>
 </html>
