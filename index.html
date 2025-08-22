@@ -123,7 +123,7 @@
         
         .booking-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 15px;
         }
@@ -486,7 +486,6 @@
             <div class="logo">DontPark.ai</div>
             <div class="shop-info">
                 <div class="claude-badge">Claude AI Powered ✨</div>
-
             </div>
         </div>
     </div>
@@ -727,65 +726,59 @@
                     <a href="#" class="quick-action" onclick="checkFlights()">✈️ Check Flight Status</a>
                     <a href="#" class="quick-action" onclick="viewSchedule()">📅 View Tomorrow's Schedule</a>
                     <a href="#" class="quick-action" onclick="customerFeedback()">⭐ Customer Feedback</a>
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-                    <script>
-                        console.log('Script is starting to run!');
-// Wait for Supabase to load
-window.addEventListener('load', function() {
-    console.log('Page loaded, checking Supabase...');
-// Wait for Supabase to load
-window.addEventListener('load', function() {
-    console.log('Page loaded, checking Supabase...');
-    console.log('createClient type:', typeof createClient);
-    
-    // ============================================
-    // SUPABASE CONFIGURATION 
-    // ============================================
-    const SUPABASE_URL = 'https://uhrhukcovvvbmopvoncr.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocmh1a2NvdnZ2Ym1vcHZvbmNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MzIyMzcsImV4cCI6MjA3MDEwODIzN30.Ce69ktLB8h_OMe0H1XpDmRjKZawGlb59ProIs8UEaRw';
-    
-    // Create global supabase client
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('Supabase client initialized:', supabase);
-    
-    // Load real bookings from Supabase
-    async function loadBookings() {
-        try {
-            // ... rest of your existing code continues here
-        const { data: bookings, error } = await supabase
-            .from('bookings')
-            .select('*')
-            .order('created_at', { ascending: false });
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('Script is starting to run!');
         
-        if (error) {
-            console.error('Error loading bookings:', error);
-            return;
-        }
-        
-        console.log('Loaded bookings:', bookings);
-        displayBookings(bookings);
-        
-    } catch (error) {
-        console.error('Database error:', error);
-    }
-}
-                
-                console.log('Loaded bookings:', bookings);
-                displayBookings(bookings);
-                
-            } catch (error) {
-                console.error('Database error:', error);
+        // Wait for Supabase to load
+        window.addEventListener('load', function() {
+            console.log('Page loaded, checking Supabase...');
+            console.log('createClient type:', typeof createClient);
+            
+            // ============================================
+            // SUPABASE CONFIGURATION 
+            // ============================================
+            const SUPABASE_URL = 'https://uhrhukcovvvbmopvoncr.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocmh1a2NvdnZ2Ym1vcHZvbmNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MzIyMzcsImV4cCI6MjA3MDEwODIzN30.Ce69ktLB8h_OMe0H1XpDmRjKZawGlb59ProIs8UEaRw';
+            
+            // Create global supabase client
+            const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase client initialized:', supabase);
+            
+            // Load real bookings from Supabase
+            async function loadBookings() {
+                try {
+                    const { data: bookings, error } = await supabase
+                        .from('bookings')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+                    
+                    if (error) {
+                        console.error('Error loading bookings:', error);
+                        return;
+                    }
+                    
+                    console.log('Loaded bookings:', bookings);
+                    displayBookings(bookings);
+                    
+                } catch (error) {
+                    console.error('Database error:', error);
+                }
             }
-        }
-        
-        // Display bookings in the UI (we'll build this next)
-        function displayBookings(bookings) {
-            console.log('Displaying bookings:', bookings);
-            // TODO: Replace static booking cards with real data
-        }
-        
-        // Load bookings when page loads
-        window.addEventListener('DOMContentLoaded', loadBookings);
+            
+            // Display bookings in the UI (we'll build this next)
+            function displayBookings(bookings) {
+                console.log('Displaying bookings:', bookings);
+                // TODO: Replace static booking cards with real data
+            }
+            
+            // Load bookings when page loads
+            loadBookings();
+        });
         
         function confirmBooking(customer) {
             alert(`Booking confirmed for ${customer}! Pickup reminder set for 1 hour before scheduled time.`);
@@ -895,6 +888,6 @@ window.addEventListener('load', function() {
         function viewEarnings() {
             alert("Monthly Earnings:\nThis Month: $12,450\nLast Month: $11,200\nAverage/booking: $280");
         }
-});</script>
+    </script>
 </body>
 </html>
