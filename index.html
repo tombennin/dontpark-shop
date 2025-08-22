@@ -726,18 +726,92 @@
                     <a href="#" class="quick-action" onclick="checkFlights()">✈️ Check Flight Status</a>
                     <a href="#" class="quick-action" onclick="viewSchedule()">📅 View Tomorrow's Schedule</a>
                     <a href="#" class="quick-action" onclick="customerFeedback()">⭐ Customer Feedback</a>
+                    <a href="#" class="quick-action" onclick="testSupabaseConnection()" style="background: #dbeafe; border-color: #3b82f6;">🧪 Test Supabase Connection</a>
+                    <a href="#" class="quick-action" onclick="createTestBooking()" style="background: #f0fdf4; border-color: #10b981;">➕ Create Test Booking</a>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        console.log('Script is starting to run!');
+        // Force show all errors and logs
+        console.clear();
         
-        // Wait for Supabase to load
-        window.addEventListener('load', function() {
-            console.log('Page loaded, checking Supabase...');
-            console.log('createClient type:', typeof createClient);
+        // Override console to ensure we see everything
+        const originalError = console.error;
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        
+        console.error = function(...args) {
+            originalError.apply(console, ['🔥 ERROR:', ...args]);
+            alert('ERROR DETECTED: ' + args.join(' '));
+        };
+        
+        console.log = function(...args) {
+            originalLog.apply(console, ['📝 LOG:', ...args]);
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, ['⚠️ WARN:', ...args]);
+        };
+        
+        // Catch all unhandled errors
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.error('Unhandled Error:', msg, 'at', url, 'line', lineNo);
+            alert('UNHANDLED ERROR: ' + msg);
+            return false;
+        };
+        
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled Promise Rejection:', event.reason);
+            alert('PROMISE REJECTION: ' + event.reason);
+        });
+        
+        console.log('🚀 Script is starting to run!');
+        console.log('📍 Current timestamp:', new Date().toISOString());
+        
+        // Check what's available in window
+        console.log('🪟 Window object keys containing "supabase":', Object.keys(window).filter(k => k.toLowerCase().includes('supabase')));
+        console.log('🪟 Window object keys containing "create":', Object.keys(window).filter(k => k.toLowerCase().includes('create')));
+        
+        // Try different ways to access Supabase
+        console.log('🔍 Checking Supabase availability...');
+        console.log('typeof window.supabase:', typeof window.supabase);
+        console.log('typeof createClient:', typeof createClient);
+        console.log('typeof window.createClient:', typeof window.createClient);
+        console.log('window.supabase object:', window.supabase);
+        
+        // Check if script loaded
+        const scripts = document.querySelectorAll('script[src*="supabase"]');
+        console.log('📜 Supabase script tags found:', scripts.length);
+        scripts.forEach((script, i) => {
+            console.log(`Script ${i}:`, script.src, 'loaded:', script.readyState);
+        });
+        
+        // Wait for everything to load
+        function initializeApp() {
+            console.log('🎯 initializeApp called');
+            
+            // Try multiple ways to get createClient
+            let createClientFunc = null;
+            
+            if (typeof createClient !== 'undefined') {
+                createClientFunc = createClient;
+                console.log('✅ Found createClient in global scope');
+            } else if (window.supabase && window.supabase.createClient) {
+                createClientFunc = window.supabase.createClient;
+                console.log('✅ Found createClient in window.supabase');
+            } else if (window.createClient) {
+                createClientFunc = window.createClient;
+                console.log('✅ Found createClient in window');
+            } else {
+                console.error('❌ createClient not found anywhere!');
+                console.log('Available window properties:', Object.keys(window).slice(0, 20));
+                return;
+            }
+            
+            console.log('📄 Page loaded, checking Supabase again...');
+            console.log('typeof createClientFunc:', typeof createClientFunc);
             
             // ============================================
             // SUPABASE CONFIGURATION 
@@ -745,36 +819,163 @@
             const SUPABASE_URL = 'https://uhrhukcovvvbmopvoncr.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocmh1a2NvdnZ2Ym1vcHZvbmNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MzIyMzcsImV4cCI6MjA3MDEwODIzN30.Ce69ktLB8h_OMe0H1XpDmRjKZawGlb59ProIs8UEaRw';
             
-            // Create global supabase client
-            const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            console.log('Supabase client initialized:', supabase);
+            console.log('⚙️ Supabase configuration:');
+            console.log('URL:', SUPABASE_URL);
+            console.log('Key length:', SUPABASE_ANON_KEY.length);
+            
+            // Check if createClient function exists
+            if (!createClientFunc) {
+                console.error('❌ createClientFunc is null! Supabase library may not have loaded.');
+                alert('❌ Supabase library not loaded! Check console for details.');
+                return;
+            }
+            
+            console.log('✅ createClient function is available');
+            
+            // Create global supabase client with error handling
+            let supabase;
+            try {
+                supabase = createClientFunc(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('✅ Supabase client created successfully:', supabase);
+                console.log('🔧 Supabase client methods:', Object.keys(supabase));
+                
+                // Store globally for access from other functions
+                window.supabaseClient = supabase;
+                
+                alert('✅ Supabase client created successfully!');
+            } catch (error) {
+                console.error('❌ Error creating Supabase client:', error);
+                alert('❌ Error creating Supabase client: ' + error.message);
+                return;
+            }
             
             // Load real bookings from Supabase
             async function loadBookings() {
                 try {
+                    console.log('🔄 Attempting to connect to Supabase...');
+                    console.log('Supabase URL:', SUPABASE_URL);
+                    console.log('Supabase client:', supabase);
+                    
+                    // Test connection first
+                    const { data: testData, error: testError } = await supabase
+                        .from('bookings')
+                        .select('count', { count: 'exact', head: true });
+                    
+                    if (testError) {
+                        console.error('❌ Supabase connection test failed:', testError);
+                        showConnectionStatus('failed', testError.message);
+                        return;
+                    }
+                    
+                    console.log('✅ Supabase connection successful!');
+                    console.log('📊 Total bookings count:', testData);
+                    
                     const { data: bookings, error } = await supabase
                         .from('bookings')
                         .select('*')
                         .order('created_at', { ascending: false });
                     
                     if (error) {
-                        console.error('Error loading bookings:', error);
+                        console.error('❌ Error loading bookings:', error);
+                        showConnectionStatus('error', error.message);
                         return;
                     }
                     
-                    console.log('Loaded bookings:', bookings);
+                    console.log('✅ Successfully loaded bookings:', bookings);
+                    console.log('📈 Number of bookings retrieved:', bookings?.length || 0);
+                    
+                    showConnectionStatus('success', `Loaded ${bookings?.length || 0} bookings`);
                     displayBookings(bookings);
                     
                 } catch (error) {
-                    console.error('Database error:', error);
+                    console.error('💥 Database connection error:', error);
+                    showConnectionStatus('failed', error.message);
                 }
             }
             
-            // Display bookings in the UI (we'll build this next)
+            // Display bookings in the UI
             function displayBookings(bookings) {
-                console.log('Displaying bookings:', bookings);
+                console.log('🎨 Displaying bookings in UI:', bookings);
+                
+                if (!bookings || bookings.length === 0) {
+                    console.log('📭 No bookings to display - showing static demo data');
+                    return;
+                }
+                
                 // TODO: Replace static booking cards with real data
+                console.log('🔄 Would replace static booking cards with:', bookings);
+                
+                // For now, just update the stats with real data
+                updateStatsFromData(bookings);
             }
+            
+            // Update stats with real data
+            function updateStatsFromData(bookings) {
+                const today = new Date().toISOString().split('T')[0];
+                const todayBookings = bookings.filter(booking => 
+                    booking.created_at?.startsWith(today)
+                );
+                
+                // Update the stats display
+                const statCards = document.querySelectorAll('.stat-number');
+                if (statCards[0]) statCards[0].textContent = todayBookings.length;
+                
+                console.log(`📊 Updated stats: ${todayBookings.length} bookings today`);
+            }
+            
+            // Show connection status in the UI
+            function showConnectionStatus(status, message) {
+                // Remove any existing status indicator
+                const existingStatus = document.querySelector('.supabase-status');
+                if (existingStatus) existingStatus.remove();
+                
+                // Create status indicator
+                const statusDiv = document.createElement('div');
+                statusDiv.className = 'supabase-status';
+                statusDiv.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 10px 15px;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease-out;
+                `;
+                
+                switch(status) {
+                    case 'success':
+                        statusDiv.style.background = '#10b981';
+                        statusDiv.style.color = 'white';
+                        statusDiv.innerHTML = `✅ Supabase: ${message}`;
+                        break;
+                    case 'error':
+                        statusDiv.style.background = '#ef4444';
+                        statusDiv.style.color = 'white';
+                        statusDiv.innerHTML = `❌ Supabase Error: ${message}`;
+                        break;
+                    case 'failed':
+                        statusDiv.style.background = '#f59e0b';
+                        statusDiv.style.color = 'white';
+                        statusDiv.innerHTML = `⚠️ Supabase: ${message}`;
+                        break;
+                }
+                
+                document.body.appendChild(statusDiv);
+                
+                // Auto-remove after 5 seconds
+                setTimeout(() => statusDiv.remove(), 5000);
+            }
+            
+            // Add CSS for animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
             
             // Load bookings when page loads
             loadBookings();
@@ -866,6 +1067,56 @@
             ];
             
             return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        // Add a test Supabase button for manual testing
+        function testSupabaseConnection() {
+            console.log('🧪 Manual Supabase test initiated...');
+            if (typeof loadBookings === 'function') {
+                loadBookings();
+            } else {
+                console.error('loadBookings function not available');
+            }
+        }
+        
+        // Add a button to create test data
+        async function createTestBooking() {
+            try {
+                const testBooking = {
+                    customer_name: 'Test Customer',
+                    vehicle_info: '2020 Test Car',
+                    issue_description: 'Test issue for debugging',
+                    flight_info: 'TEST123',
+                    status: 'new',
+                    created_at: new Date().toISOString()
+                };
+                
+                console.log('📝 Creating test booking:', testBooking);
+                
+                if (!window.supabaseClient) {
+                    alert('Supabase client not available');
+                    return;
+                }
+                
+                const { data, error } = await window.supabaseClient
+                    .from('bookings')
+                    .insert([testBooking])
+                    .select();
+                
+                if (error) {
+                    console.error('❌ Error creating test booking:', error);
+                    alert(`Error creating test booking: ${error.message}`);
+                } else {
+                    console.log('✅ Test booking created:', data);
+                    alert('Test booking created successfully!');
+                    if (typeof loadBookings === 'function') {
+                        loadBookings();
+                    }
+                }
+            } catch (error) {
+                console.error('💥 Error in createTestBooking:', error);
+                alert(`Error: ${error.message}`);
+            }
         }
 
         // Quick action functions
