@@ -592,26 +592,47 @@
             updateConnectionStatus('🔄 Loading data...');
             
             try {
+                console.log('🔍 Attempting to load bookings...');
+                
                 const { data, error } = await supabase
                     .from('bookings')
                     .select('*')
                     .order('created_at', { ascending: false })
                     .execute();
                 
+                console.log('📊 Raw response:', { data, error });
+                
                 if (error) {
-                    console.error('Error loading bookings:', error);
-                    updateConnectionStatus('❌ Database error: ' + error.message, false);
+                    console.error('❌ Error object:', error);
+                    const errorMessage = error.message || error.error_description || error.details || JSON.stringify(error);
+                    updateConnectionStatus('❌ Database error: ' + errorMessage, false);
+                    
+                    // Show a more helpful error in the bookings area
+                    const container = document.getElementById('bookingsContainer');
+                    container.innerHTML = `
+                        <div class="booking-card">
+                            <div style="text-align: center; padding: 40px; color: #ef4444;">
+                                <div style="font-size: 3em; margin-bottom: 20px;">⚠️</div>
+                                <div><strong>Database Error:</strong></div>
+                                <div style="margin: 10px 0; font-family: monospace; background: #fef2f2; padding: 10px; border-radius: 4px;">
+                                    ${errorMessage}
+                                </div>
+                                <button class="btn btn-primary" onclick="loadAllData()" style="margin-top: 20px;">Retry</button>
+                            </div>
+                        </div>
+                    `;
                     return;
                 }
                 
+                console.log('✅ Successfully loaded data:', data);
                 allBookings = data || [];
                 updateStats();
                 displayBookings();
                 updateConnectionStatus('✅ Data loaded successfully');
                 
             } catch (error) {
-                console.error('Error:', error);
-                updateConnectionStatus('❌ Connection failed', false);
+                console.error('💥 Exception in loadAllData:', error);
+                updateConnectionStatus('❌ Connection failed: ' + error.message, false);
             }
         }
         
