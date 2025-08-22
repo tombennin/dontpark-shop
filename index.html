@@ -775,7 +775,6 @@
         window.addEventListener('DOMContentLoaded', loadBookings);
         
         function confirmBooking(customer) {
-        function confirmBooking(customer) {
             alert(`Booking confirmed for ${customer}! Pickup reminder set for 1 hour before scheduled time.`);
             // Update status badge to confirmed
             event.target.closest('.booking-card').querySelector('.status-badge').textContent = 'CONFIRMED';
