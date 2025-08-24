@@ -457,7 +457,17 @@
 function refreshData() {
     loadAllData();
 }
-        
+        // Add this function (can go anywhere in your script section)
+function refreshData() {
+    loadAllData();
+}
+
+// Add displayBookings function here
+function displayBookings() {
+    // ... the long function code
+}
+
+// Rest of your Supabase client code...
         // Built-in Supabase client (same as before)
         class SimpleSupabaseClient {
             constructor(url, key) {
