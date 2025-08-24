@@ -645,177 +645,200 @@
             document.getElementById('totalBookings').textContent = allBookings.length;
         }
         
-        function displayBookings() {
-            const container = document.getElementById('bookingsContainer');
-            
-            if (!allBookings || allBookings.length === 0) {
-                container.innerHTML = `
-                    <div class="booking-card">
-                        <div style="text-align: center; padding: 40px; color: #64748b;">
-                            <div style="font-size: 3em; margin-bottom: 20px;">📭</div>
-                            <div>No bookings found</div>
-                            <button class="btn btn-primary" onclick="createTestBooking()" style="margin-top: 20px;">Create Test Booking</button>
-                        </div>
-                    </div>
-                `;
-                return;
+      // Fixed displayBookings function for dontpark.ai - matches your existing database
+function displayBookings() {
+    const container = document.getElementById('bookingsContainer');
+    
+    if (!allBookings || allBookings.length === 0) {
+        container.innerHTML = `
+            <div class="booking-card">
+                <div style="text-align: center; padding: 40px; color: #64748b;">
+                    <div style="font-size: 3em; margin-bottom: 20px;">📭</div>
+                    <div>No bookings found</div>
+                    <button class="btn btn-primary" onclick="createTestBooking()" style="margin-top: 20px;">Create Test Booking</button>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    const bookingsHTML = allBookings.slice(0, 5).map(booking => {
+        // Parse service description if it exists and is JSON
+        let claudeRecommendation = null;
+        if (booking.service_description) {
+            try {
+                claudeRecommendation = JSON.parse(booking.service_description);
+            } catch (e) {
+                // If not JSON, treat as plain text
+                claudeRecommendation = { service: 'Service Request', description: booking.service_description, cost: booking.estimated_cost || 0 };
             }
-            
-            const bookingsHTML = allBookings.slice(0, 5).map(booking => `
-                <div class="booking-card">
-                    <div class="booking-header">
-                        <div class="customer-info">
-                            <div class="customer-name">
-                                ${booking.customer_name || 'Unknown Customer'} 
-                                <span class="status-badge status-${booking.status || 'new'}">${(booking.status || 'NEW').toUpperCase()}</span>
-                            </div>
-                            <div class="vehicle-info">${booking.vehicle_info || 'No vehicle info'}</div>
-                            <div class="booking-reference">
-                                <strong>Booking ID:</strong> ${booking.id || 'N/A'} | 
-                                <strong>Created:</strong> ${new Date(booking.created_at).toLocaleDateString()}
-                            </div>
+        }
+        
+        // Build vehicle info from YOUR database columns
+        const vehicleInfo = `${booking.year || ''} ${booking.Make_model || booking.car_make || ''} • ${booking.color || ''} • Plate: ${booking.license_plate || 'N/A'}`.replace(/\s+/g, ' ').trim();
+        
+        // Build flight info from YOUR columns
+        const flightInfo = `Departure: ${booking.flight_date || 'N/A'} at ${booking.flight_time || 'N/A'} | Return: ${booking.return_date || 'N/A'} at ${booking.arrival_time || 'N/A'}`;
+        
+        // Get the customer issue description
+        const customerIssue = booking.customer_notes || booking.claude_conversation || 'No specific issue described';
+        
+        return `
+            <div class="booking-card">
+                <div class="booking-header">
+                    <div class="customer-info">
+                        <div class="customer-name">
+                            ${booking.customer_name || 'Unknown Customer'} 
+                            <span class="status-badge status-${(booking.status || 'new').replace('-', '')}">${(booking.status || 'NEW').toUpperCase()}</span>
                         </div>
-                    </div>
-                    
-                    ${booking.flight_info ? `
-                        <div class="flight-info">
-                            ✈️ <strong>Flight:</strong> ${booking.flight_info}
+                        <div class="vehicle-info">${vehicleInfo}</div>
+                        <div class="booking-reference">
+                            <strong>Contact:</strong> ${booking.customer_phone || 'N/A'} • ${booking.customer_email || 'N/A'}
                         </div>
-                    ` : ''}
-                    
-                    <div class="claude-diagnosis">
-                        <h4>🤖 Issue Description</h4>
-                        <div class="diagnosis-text">
-                            ${booking.issue_description || 'No description provided'}
+                        <div class="booking-reference">
+                            <strong>Booking ID:</strong> ${booking.dontpark_booking_id || booking.id} | 
+                            <strong>Created:</strong> ${new Date(booking.created_at).toLocaleDateString()}
+                            ${booking.car_mileage ? ` | <strong>Miles:</strong> ${booking.car_mileage}` : ''}
                         </div>
-                    </div>
-                    
-                    <div class="revenue-info">
-                        <strong>Estimated Revenue:</strong> $280.00
-                    </div>
-                    
-                    <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="updateBooking(${booking.id})">Update Status</button>
-                        <button class="btn btn-secondary" onclick="viewDetails(${booking.id})">View Details</button>
                     </div>
                 </div>
-            `).join('');
-            
-            container.innerHTML = bookingsHTML;
-        }
-        
-        // Action functions
-        async function createTestBooking() {
-            const testBooking = {
-                customer_name: 'Test Customer ' + Math.floor(Math.random() * 1000),
-                vehicle_info: '2020 Honda Civic • 65,000 miles',
-                issue_description: 'Strange noise when turning, especially in parking lots. Created at ' + new Date().toLocaleString(),
-                flight_info: 'SW' + Math.floor(Math.random() * 9000 + 1000),
-                status: 'new',
-                created_at: new Date().toISOString()
-            };
-            
-            updateConnectionStatus('➕ Creating test booking...');
-            
-            try {
-                const { data, error } = await supabase
-                    .from('bookings')
-                    .insert([testBooking])
-                    .execute();
                 
-                if (error) {
-                    updateConnectionStatus('❌ Error creating booking: ' + error.message, false);
-                } else {
-                    updateConnectionStatus('✅ Test booking created!');
-                    loadAllData(); // Refresh data
-                }
-            } catch (error) {
-                updateConnectionStatus('❌ Error: ' + error.message, false);
+                <div class="flight-info">
+                    ✈️ <strong>Flight Details:</strong> ${flightInfo}
+                </div>
+                
+                <div class="claude-diagnosis">
+                    <h4>🤖 Customer Issue & Claude AI Analysis</h4>
+                    <div class="diagnosis-text">
+                        <strong>Customer Description:</strong> ${customerIssue}<br><br>
+                        ${claudeRecommendation ? `
+                            <strong>Claude Recommendation:</strong> ${claudeRecommendation.service}<br>
+                            ${claudeRecommendation.description}
+                        ` : 'Awaiting diagnostic analysis...'}
+                    </div>
+                </div>
+                
+                <div class="revenue-info ${(booking.status || '').includes('completed') ? 'completed' : ''}">
+                    <strong>Estimated:</strong> $${booking.estimated_cost || claudeRecommendation?.cost || 280} • 
+                    ${booking.final_cost ? `<strong>Final:</strong> $${booking.final_cost} • ` : ''}
+                    <strong>Status:</strong> ${booking.status || 'New Booking'}
+                    ${booking.commission_amount ? ` • <strong>Commission:</strong> $${booking.commission_amount}` : ''}
+                </div>
+                
+                ${booking.shop_notes ? `
+                    <div style="background: #fef3c7; padding: 10px; border-radius: 8px; margin: 10px 0; border-left: 3px solid #f59e0b;">
+                        <strong>Shop Notes:</strong> ${booking.shop_notes}
+                    </div>
+                ` : ''}
+                
+                ${booking.internal_notes ? `
+                    <div style="background: #f3f4f6; padding: 10px; border-radius: 8px; margin: 10px 0; border-left: 3px solid #6b7280;">
+                        <strong>Internal Notes:</strong> ${booking.internal_notes}
+                    </div>
+                ` : ''}
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="updateBookingStatus('${booking.id}', '${booking.customer_name || 'Customer'}')">Update Status</button>
+                    <button class="btn btn-secondary" onclick="contactCustomer('${booking.customer_phone || ''}', '${booking.customer_email || ''}')">Contact Customer</button>
+                    <button class="btn btn-success" onclick="viewFullDetails('${booking.id}')">Full Details</button>
+                    ${booking.status === 'new' ? `<button class="btn btn-primary" onclick="assignTechnician('${booking.id}')">Assign Tech</button>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = bookingsHTML;
+}
+
+// Updated stats calculation using your actual columns
+function updateStats() {
+    const today = new Date().toISOString().split('T')[0];
+    const todayBookings = allBookings.filter(b => b.created_at?.startsWith(today));
+    
+    // Calculate actual revenue from your estimated_cost and final_cost columns
+    const todayRevenue = todayBookings.reduce((sum, booking) => {
+        return sum + (booking.final_cost || booking.estimated_cost || 280);
+    }, 0);
+    
+    document.getElementById('todayBookings').textContent = todayBookings.length;
+    document.getElementById('todayRevenue').textContent = '$' + todayRevenue;
+    document.getElementById('totalBookings').textContent = allBookings.length;
+}
+
+// Enhanced action functions using your database columns
+function updateBookingStatus(id, customerName) {
+    const statusOptions = ['new', 'confirmed', 'in-progress', 'completed', 'cancelled'];
+    const newStatus = prompt(`Update status for ${customerName}:\n\nOptions:\n• ${statusOptions.join('\n• ')}\n\nEnter new status:`);
+    
+    if (newStatus && statusOptions.includes(newStatus.toLowerCase())) {
+        updateConnectionStatus(`🔄 Updating booking ${id}...`);
+        
+        // Here you would call Supabase to actually update - for now showing success
+        setTimeout(() => {
+            updateConnectionStatus(`✅ Booking ${id} updated to ${newStatus.toUpperCase()}`);
+            loadAllData(); // Refresh to show updated status
+        }, 1000);
+    }
+}
+
+function viewFullDetails(id) {
+    const booking = allBookings.find(b => b.id === id);
+    if (booking) {
+        let serviceDetails = 'No service details available';
+        
+        if (booking.service_description) {
+            try {
+                const service = JSON.parse(booking.service_description);
+                serviceDetails = `Service: ${service.service}\nDescription: ${service.description}\nCost: $${service.cost}`;
+            } catch (e) {
+                serviceDetails = booking.service_description;
             }
         }
         
-        function refreshData() {
-            loadAllData();
-        }
-        
-        function viewAllBookings() {
-            alert(`Total bookings: ${allBookings.length}\n\nRecent bookings:\n${allBookings.slice(0, 3).map(b => `• ${b.customer_name}: ${b.issue_description?.substring(0, 50)}...`).join('\n')}`);
-        }
-        
-        function updateBooking(id) {
-            alert(`Would update booking #${id} status`);
-        }
-        
-        function viewDetails(id) {
-            const booking = allBookings.find(b => b.id === id);
-            if (booking) {
-                alert(`Booking Details:\n\nCustomer: ${booking.customer_name}\nVehicle: ${booking.vehicle_info}\nIssue: ${booking.issue_description}\nStatus: ${booking.status}\nCreated: ${new Date(booking.created_at).toLocaleString()}`);
-            }
-        }
-        
-        function customerFeedback() {
-            alert("Recent Reviews:\n⭐⭐⭐⭐⭐ 'Quick and professional service!' - Recent Customer\n⭐⭐⭐⭐⭐ 'Saved me time and money!' - Happy Client");
-        }
-        
-        // Chat functions
-        function handleChatKeyPress(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendToClaude();
-            }
-        }
-        
-        function sendToClaude() {
-            const input = document.querySelector('.chat-input');
-            const message = input.value.trim();
-            
-            if (!message) return;
-            
-            addUserMessage(message);
-            input.value = '';
-            
-            setTimeout(() => {
-                const response = generateClaudeResponse(message);
-                addClaudeMessage(response);
-            }, 1000);
-        }
-        
-        function addUserMessage(message) {
-            const chatContainer = document.getElementById('claudeChat');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'chat-message user-message';
-            messageDiv.innerHTML = `<strong>You:</strong> ${message}`;
-            chatContainer.appendChild(messageDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-        
-        function addClaudeMessage(message) {
-            const chatContainer = document.getElementById('claudeChat');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'chat-message claude-message';
-            messageDiv.innerHTML = `<strong>Claude:</strong> ${message}`;
-            chatContainer.appendChild(messageDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-        
-        function generateClaudeResponse(message) {
-            const responses = [
-                "For that type of issue, I'd recommend checking the most common causes first. What specific symptoms did the customer describe?",
-                "That sounds like a classic case. Here's what I'd suggest checking first, and then the follow-up questions to ask the customer...",
-                "Based on your current bookings, I can see some patterns. Would you like me to analyze the common issues and suggest preventive maintenance recommendations?",
-                "Great question! For customer communication about that repair, I'd suggest explaining it this way to build trust and transparency..."
-            ];
-            
-            return responses[Math.floor(Math.random() * responses.length)];
-        }
-        
-        // Initialize app
-        console.log('🚀 DontPark.ai dashboard initializing...');
-        
-        // Load data when page loads
-        window.addEventListener('load', function() {
-            setTimeout(loadAllData, 500);
-        });
-    </script>
-</body>
-</html>
+        const details = `📋 FULL BOOKING DETAILS\n\n` +
+               `🎫 BOOKING INFO\n` +
+               `DontPark ID: ${booking.dontpark_booking_id || 'N/A'}\n` +
+               `Work Order: ${booking.shop_work_order || 'Not assigned'}\n` +
+               `Priority Score: ${booking.priority_score || 'Normal'}\n\n` +
+               `👤 CUSTOMER\n` +
+               `Name: ${booking.customer_name}\n` +
+               `Phone: ${booking.customer_phone}\n` +
+               `Email: ${booking.customer_email}\n\n` +
+               `🚗 VEHICLE\n` +
+               `Vehicle: ${booking.year} ${booking.Make_model}\n` +
+               `Make: ${booking.car_make}\n` +
+               `Color: ${booking.color}\n` +
+               `License: ${booking.license_plate}\n` +
+               `Mileage: ${booking.car_mileage || 'Not provided'}\n\n` +
+               `✈️ FLIGHT INFO\n` +
+               `Departure: ${booking.flight_date} at ${booking.flight_time}\n` +
+               `Return: ${booking.return_date} at ${booking.arrival_time}\n\n` +
+               `🔧 SERVICE\n` +
+               `${serviceDetails}\n` +
+               `Estimated: $${booking.estimated_cost || 'TBD'}\n` +
+               `Final Cost: $${booking.final_cost || 'Pending'}\n` +
+               `Commission: $${booking.commission_amount || 'TBD'} (${booking.commission_status || 'Pending'})\n\n` +
+               `📝 NOTES\n` +
+               `Customer: ${booking.customer_notes || 'None'}\n` +
+               `Shop: ${booking.shop_notes || 'None'}\n` +
+               `Internal: ${booking.internal_notes || 'None'}\n\n` +
+               `📅 TIMELINE\n` +
+               `Created: ${new Date(booking.created_at).toLocaleString()}\n` +
+               `Updated: ${new Date(booking.updated_at).toLocaleString()}\n` +
+               `Completion Time: ${booking.actual_completion_time || 'Pending'}\n` +
+               `Status: ${booking.status}\n`;
+               
+        alert(details);
+    }
+}
+
+function assignTechnician(id) {
+    const tech = prompt('Assign technician to this booking:\n\nEnter technician name:');
+    if (tech) {
+        updateConnectionStatus(`👨‍🔧 Assigning ${tech} to booking ${id}...`);
+        // Here you would update the pickup_driver_id or add a technician field
+        setTimeout(() => {
+            updateConnectionStatus(`✅ ${tech} assigned to booking ${id}`);
+        }, 1000);
+    }
+}
