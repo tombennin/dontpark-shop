@@ -453,6 +453,11 @@
     </div>
 
     <script>
+// Add this function (can go anywhere in your script section)
+function refreshData() {
+    loadAllData();
+}
+        
         // Built-in Supabase client (same as before)
         class SimpleSupabaseClient {
             constructor(url, key) {
