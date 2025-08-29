@@ -673,9 +673,10 @@
                             customer: 'Jennifer Walsh',
                             vehicle: '2018 Toyota Camry',
                             service: 'AC Repair & Recharge',
-                            flight: 'AA 3291 - ETA 7:20 PM',
+                            flight: 'AA 3291 - ETA 7:20 PM ⚠️',
                             status: 'complete',
-                            price: 195
+                            price: 195,
+                            afterHours: true
                         }
                     ],
                     upcoming: [
@@ -804,7 +805,10 @@
             // Load today's bookings
             const todayContainer = document.getElementById('todayBookings');
             if (shop.bookings.today.length > 0) {
-                todayContainer.innerHTML = shop.bookings.today.map(booking => `
+                todayContainer.innerHTML = shop.bookings.today.map(booking => {
+                    const isAfterHours = booking.afterHours || booking.flight?.includes('7:') || booking.flight?.includes('8:') || booking.flight?.includes('9:') || booking.flight?.includes('10:') || booking.flight?.includes('11:');
+                    
+                    return `
                     <div class="booking-card">
                         <div class="booking-header">
                             <span class="customer-name">${booking.customer}</span>
@@ -815,17 +819,36 @@
                             <strong>Vehicle:</strong> ${booking.vehicle}<br>
                             <strong>Status:</strong> ${booking.status === 'complete' ? '✅ Complete' : '🔧 In Progress'}
                         </div>
+                        ${isAfterHours && booking.status === 'complete' ? `
+                            <div class="after-hours-section">
+                                <div class="after-hours-title">
+                                    🌙 After-Hours Pickup Required
+                                </div>
+                                <div style="color: #856404; font-size: 0.9rem; margin-bottom: 10px;">
+                                    Shop closes at 6 PM. Customer arrives at ${booking.flight.split('ETA ')[1]}
+                                </div>
+                                <div class="lockbox-setup">
+                                    <input type="text" class="lockbox-input" id="lockbox-${booking.id}" placeholder="Enter lockbox code (e.g., 4729)">
+                                    <button class="btn-set-lockbox" onclick="setLockboxCode('${booking.id}')">
+                                        Set Code
+                                    </button>
+                                </div>
+                                <div id="lockbox-status-${booking.id}" style="display: none;" class="lockbox-status">
+                                    ✅ Lockbox code set! Will be sent to customer after payment.
+                                </div>
+                            </div>
+                        ` : ''}
                         <div class="booking-actions">
                             ${booking.status === 'complete' ? 
-                                `<button class="btn btn-complete" onclick="openPaymentModal('${booking.id}', '${booking.customer}', '${booking.vehicle}', '${booking.service}', ${booking.price})">
-                                    Process Payment ($${booking.price})
+                                `<button class="btn btn-complete" onclick="openPaymentModal('${booking.id}', '${booking.customer}', '${booking.vehicle}', '${booking.service}', ${booking.price}, ${isAfterHours})">
+                                    Process Payment (${booking.price})
                                 </button>` : 
                                 `<button class="btn btn-complete" disabled>Service In Progress</button>`
                             }
                             <button class="btn btn-message">Message</button>
                         </div>
                     </div>
-                `).join('');
+                `}).join('');
             }
             
             // Load upcoming bookings
@@ -859,12 +882,30 @@
             }, 2000);
         }
         
-        function openPaymentModal(bookingId, customer, vehicle, service, price) {
+        function setLockboxCode(bookingId) {
+            const code = document.getElementById(`lockbox-${bookingId}`).value;
+            if (code && code.length >= 4) {
+                // Store lockbox code (in production, save to database)
+                localStorage.setItem(`lockbox-${bookingId}`, code);
+                document.getElementById(`lockbox-status-${bookingId}`).style.display = 'block';
+                document.getElementById(`lockbox-${bookingId}`).disabled = true;
+            } else {
+                alert('Please enter a 4+ digit lockbox code');
+            }
+        }
+        
+        function openPaymentModal(bookingId, customer, vehicle, service, price, isAfterHours) {
             currentBooking = bookingId;
             document.getElementById('modalCustomerName').textContent = customer;
             document.getElementById('modalVehicle').textContent = vehicle;
             document.getElementById('modalService').textContent = service;
             document.getElementById('finalAmount').value = price;
+            
+            // Store after-hours flag
+            if (isAfterHours) {
+                currentBooking = { id: bookingId, afterHours: true };
+            }
+            
             updateFees();
             document.getElementById('paymentModal').classList.add('active');
         }
@@ -879,17 +920,32 @@
             const shopEarnings = amount * 0.92;
             const platformFee = amount * 0.08;
             
-            document.getElementById('serviceTotal').textContent = `$${amount.toFixed(2)}`;
-            document.getElementById('shopEarningsModal').textContent = `$${shopEarnings.toFixed(2)}`;
-            document.getElementById('platformFee').textContent = `$${platformFee.toFixed(2)}`;
+            document.getElementById('serviceTotal').textContent = `${amount.toFixed(2)}`;
+            document.getElementById('shopEarningsModal').textContent = `${shopEarnings.toFixed(2)}`;
+            document.getElementById('platformFee').textContent = `${platformFee.toFixed(2)}`;
             document.getElementById('chargeAmount').textContent = amount.toFixed(2);
         }
         
         function processPayment() {
             const amount = parseFloat(document.getElementById('finalAmount').value);
+            const isAfterHours = currentBooking && currentBooking.afterHours;
+            const bookingId = currentBooking.id || currentBooking;
             
-            // Simulate payment processing
-            alert(`✅ Payment Successful!\n\nCharged: $${amount.toFixed(2)}\nYour earnings: $${(amount * 0.92).toFixed(2)}\nDontPark fee: $${(amount * 0.08).toFixed(2)}\n\nFunds will be in your account within 2 business days.`);
+            // Check if lockbox code is set for after-hours pickup
+            if (isAfterHours) {
+                const lockboxCode = localStorage.getItem(`lockbox-${bookingId}`);
+                if (!lockboxCode) {
+                    alert('⚠️ Please set a lockbox code first!\n\nThis is an after-hours pickup. You must set the lockbox code before processing payment.');
+                    closePaymentModal();
+                    return;
+                }
+                
+                // Simulate sending SMS with lockbox code
+                alert(`✅ Payment Successful!\n\nCharged: ${amount.toFixed(2)}\nYour earnings: ${(amount * 0.92).toFixed(2)}\n\n📱 SMS sent to customer:\n"Your car is ready! It's parked at spot #3. Keys are in the lockbox at the main entrance. Code: ${lockboxCode}. Thank you for using DontPark!"`);
+            } else {
+                // Regular payment confirmation
+                alert(`✅ Payment Successful!\n\nCharged: ${amount.toFixed(2)}\nYour earnings: ${(amount * 0.92).toFixed(2)}\nDontPark fee: ${(amount * 0.08).toFixed(2)}\n\nFunds will be in your account within 2 business days.`);
+            }
             
             closePaymentModal();
             
