@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeke's Automotive Group - DontPark.ai Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .demo-banner {
+            background: #fbbf24;
+            color: #000;
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 8px 8px 0 0;
+            font-size: 14px;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .shop-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .shop-details h1 {
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+        
+        .shop-details p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .status-badge {
+            background: #10b981;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .metric-label {
+            color: #6b7280;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        
+        .metric-value.revenue {
+            color: #10b981;
+        }
+        
+        .metric-subtext {
+            color: #9ca3af;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+        
+        .requests-section {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        
+        .new-badge {
+            background: #ef4444;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .request-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            background: linear-gradient(to right, #f9fafb, white);
+        }
+        
+        .request-card:hover {
+            border-color: #8b5cf6;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+        }
+        
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .customer-info h3 {
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        
+        .car-info {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .revenue-tag {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .flight-timeline {
+            background: #f3f4f6;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .flight-endpoint {
+            text-align: center;
+        }
+        
+        .flight-label {
+            font-size: 11px;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        
+        .flight-time {
+            font-weight: bold;
+            color: #1f2937;
+        }
+        
+        .flight-date {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .flight-arrow {
+            color: #9ca3af;
+            font-size: 24px;
+        }
+        
+        .services-requested {
+            margin-top: 15px;
+        }
+        
+        .services-label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .service-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .service-tag {
+            background: #ede9fe;
+            color: #5b21b6;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-size: 14px;
+        }
+        
+        .btn-accept {
+            background: #8b5cf6;
+            color: white;
+            flex: 1;
+        }
+        
+        .btn-accept:hover {
+            background: #7c3aed;
+        }
+        
+        .btn-details {
+            background: white;
+            color: #6b7280;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .btn-details:hover {
+            background: #f9fafb;
+        }
+        
+        .calendar-preview {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .day-cell {
+            aspect-ratio: 1;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        .day-cell.has-booking {
+            background: #ede9fe;
+            border-color: #8b5cf6;
+            color: #5b21b6;
+            font-weight: bold;
+        }
+        
+        .day-number {
+            font-size: 16px;
+            margin-bottom: 2px;
+        }
+        
+        .booking-count {
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="demo-banner">
+            🎯 DEMO MODE - This is sample data to demonstrate the DontPark.ai shop dashboard
+        </div>
+        
+        <div class="header">
+            <div class="shop-info">
+                <div class="shop-details">
+                    <h1>Zeke's Automotive Group</h1>
+                    <p>169 S. Lowry St., Smyrna, TN 37167 | 615-984-4144 | Mon-Sat 9am-6pm</p>
+                </div>
+                <div class="status-badge">
+                    SHOP ACTIVE
+                </div>
+            </div>
+        </div>
+        
+        <div class="metrics-row">
+            <div class="metric-card">
+                <div class="metric-label">This Week's Potential Revenue</div>
+                <div class="metric-value revenue">$1,247</div>
+                <div class="metric-subtext">3 customer requests pending</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Cars Incoming</div>
+                <div class="metric-value">3</div>
+                <div class="metric-subtext">Next drop-off: Tomorrow 6:30 AM</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Average Service Value</div>
+                <div class="metric-value">$416</div>
+                <div class="metric-subtext">vs. $175 parking saved</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Available Capacity</div>
+                <div class="metric-value">17</div>
+                <div class="metric-subtext">of 20 bays available</div>
+            </div>
+        </div>
+        
+        <div class="requests-section">
+            <div class="section-header">
+                <h2 class="section-title">Pending Customer Requests</h2>
+                <span class="new-badge">3 NEW</span>
+            </div>
+            
+            <div class="request-card">
+                <div class="request-header">
+                    <div class="customer-info">
+                        <h3>Sarah Mitchell</h3>
+                        <div class="car-info">2019 Honda Accord • Silver • License: TN-487B3</div>
+                    </div>
+                    <div class="revenue-tag">$489</div>
+                </div>
+                
+                <div class="flight-timeline">
+                    <div class="flight-endpoint">
+                        <div class="flight-label">Drop Off</div>
+                        <div class="flight-time">6:30 AM</div>
+                        <div class="flight-date">Tomorrow (Jan 29)</div>
+                    </div>
+                    <div class="flight-arrow">✈️→</div>
+                    <div class="flight-endpoint">
+                        <div class="flight-label">Flight</div>
+                        <div class="flight-time">BNA → DEN</div>
+                        <div class="flight-date">8:45 AM departure</div>
+                    </div>
+                    <div class="flight-arrow">→✈️</div>
+                    <div class="flight-endpoint">
+                        <div class="flight-label">Pick Up</div>
+                        <div class="flight-time">9:30 PM</div>
+                        <div class="flight-date">Feb 2</div>
+                    </div>
+                </div>
+                
+                <div class="services-requested">
+                    <div class="services-label">Services Requested</div>
+                    <div class="service-tags">
+                        <span class="service-tag">Oil Change</span>
+                        <span class="service-tag">Tire Rotation</span>
+                        <span class="service-tag">Brake Inspection</span>
+                        <span class="service-tag">A/C Service</span>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-accept">Accept Request</button>
+                    <button class="btn btn-details">View Details</button>
+                </div>
+            </div>
+            
+            <div class="request-card">
+                <div class="request-header">
+                    <div class="customer-info">
+                        <h3>Marcus Johnson</h3>
+                        <div class="car-info">2020 Ford F-150 • Black • License: TN-923K7</div>
+                    </div>
+                    <div class="revenue-tag">$345</div>
+                </div>
+                
+                <div class="flight-timeline">
+                    <div class="flight-endpoint">
+                        <div class="flight-label">Drop Off</div>
+                        <div class="flight-time">5:00 AM</div>
+                        <div class="flight-date">Jan 31</div>
+                    </div>
+                    <div class="flight-arrow">✈️→</div>
+                    <div class="flight-endpoint">
+                        <div class="flight-label">Flight</div>
+                        <div class="flight-time">BNA → LAX</div>
+                        <div class="flight-date">7:10 AM departure</div>
+                    </div>
+                    <div class="flight-arrow">→✈️</div>
+                    <div class="flight-endpoint">
+                        <div class="flight-label">Pick Up</div>
+                        <div class="flight-time">11:45 PM</div>
+                        <div class="flight-date">Feb 3</div>
+                    </div>
+                </div>
+                
+                <div class="services-requested">
+                    <div class="services-label">Services Requested</div>
+                    <div class="service-tags">
+                        <span class="service-tag">Oil Change</span>
+                        <span class="service-tag">Battery Check</span>
+                        <span class="service-tag">Air Filter</span>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-accept">Accept Request</button>
+                    <button class="btn btn-details">View Details</button>
+                </div>
+            </div>
+            
+            <div class="request-card">
+                <div class="request-header">
+                    <div class="customer-info">
+                        <h3>Jennifer Chen</h3>
+                        <div class="car-info">2018 Toyota Camry • White • License: TN-156M9</div>
+                    </div>
+                    <div class="revenue-tag">$413</div>
+                </div>
+                
+                <div class="flight-timeline">
+                    <div class="flight-endpoint">
+                        <div class="flight-label">Drop Off</div>
+                        <div class="flight-time">4:30 AM</div>
+                        <div class="flight-date">Feb 1</div>
+                    </div>
+                    <div class="flight-arrow">✈️→</div>
+                    <div class="flight-endpoint">
+                        <div class="flight-label">Flight</div>
+                        <div class="flight-time">BNA → MCO</div>
+                        <div class="flight-date">6:20 AM departure</div>
+                    </div>
+                    <div class="flight-arrow">→✈️</div>
+                    <div class="flight-endpoint">
+                        <div class="flight-label">Pick Up</div>
+                        <div class="flight-time">8:15 PM</div>
+                        <div class="flight-date">Feb 5</div>
+                    </div>
+                </div>
+                
+                <div class="services-requested">
+                    <div class="services-label">Services Requested</div>
+                    <div class="service-tags">
+                        <span class="service-tag">Full Synthetic Oil Change</span>
+                        <span class="service-tag">Transmission Service</span>
+                        <span class="service-tag">Coolant Flush</span>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-accept">Accept Request</button>
+                    <button class="btn btn-details">View Details</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="calendar-preview">
+            <h2 class="section-title">This Week's Schedule</h2>
+            <div class="calendar-grid">
+                <div class="day-cell">
+                    <div class="day-number">28</div>
+                    <div class="booking-count">Mon</div>
+                </div>
+                <div class="day-cell has-booking">
+                    <div class="day-number">29</div>
+                    <div class="booking-count">1 car</div>
+                </div>
+                <div class="day-cell">
+                    <div class="day-number">30</div>
+                    <div class="booking-count">Wed</div>
+                </div>
+                <div class="day-cell has-booking">
+                    <div class="day-number">31</div>
+                    <div class="booking-count">1 car</div>
+                </div>
+                <div class="day-cell has-booking">
+                    <div class="day-number">1</div>
+                    <div class="booking-count">1 car</div>
+                </div>
+                <div class="day-cell has-booking">
+                    <div class="day-number">2</div>
+                    <div class="booking-count">1 pickup</div>
+                </div>
+                <div class="day-cell has-booking">
+                    <div class="day-number">3</div>
+                    <div class="booking-count">1 pickup</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
