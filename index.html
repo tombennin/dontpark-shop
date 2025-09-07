@@ -786,30 +786,25 @@
     }
 };
 
-function handleLogin(event) {
-        function handleLogin(event) {
-            event.preventDefault();
-            
-            const shopId = document.getElementById('shopSelect').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            if (shopId && email && password) {
-                // In production, validate credentials against database
-                currentShop = shopId;
-                localStorage.setItem('currentShop', shopId);
-                
-                // Hide login, show dashboard
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('dashboard').classList.add('active');
-                
-                // Load shop data
-                loadShopDashboard(shopId);
-            }
+      function handleLogin(event) {
+    event.preventDefault();
+    
+    const shopId = document.getElementById('shopSelect').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    if (shopId && email && password) {
+        // Redirect to the appropriate dashboard
+        if (shopId === 'zekes') {
+            window.location.href = 'zekes-dashboard.html';
+        } else {
+            // For all other shops, go to the general dashboard
+            window.location.href = 'dontpark-shop-dashboard.html';
         }
-        
-        function loadShopDashboard(shopId) {
-            const shop = shopDatabase[shopId];
+    } else {
+        alert('Please fill in all fields');
+    }
+}
             
             if (!shop) return;
             
