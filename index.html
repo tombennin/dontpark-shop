@@ -787,27 +787,189 @@
         let currentShop = null;
         let currentBooking = null;
       
-   
-
-      function handleLogin(event) {
-    event.preventDefault();
-    
-    const shopId = document.getElementById('shopSelect').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    
-    if (shopId && email && password) {
-        // Redirect to the appropriate dashboard
-        if (shopId === 'zekes') {
-            window.location.href = 'zekes-dashboard.html';
-        } else {
-            // For all other shops, go to the general dashboard
-            window.location.href = 'dontpark-shop-dashboard.html';
+ async function handleLogin(event) {
+            event.preventDefault();
+            
+            const shopId = document.getElementById('shopSelect').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!shopId || !email || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            try {
+                // Fetch shop details from Supabase
+                const { data: shop, error } = await supabase
+                    .from('shops')
+                    .select('*')
+                    .eq('id', shopId)
+                    .single();
+                
+                if (error) throw error;
+                
+                // Store logged-in shop
+                localStorage.setItem('currentShopId', shopId);
+                currentShop = shop;
+                
+                // Hide login, show dashboard
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('dashboard').classList.add('active');
+                
+                // Load dashboard with real data
+                await loadShopDashboard(shop);
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Login failed. Please try again.');
+            }
+        }  
+async function loadShopDashboard(shop) {
+            console.log('Loading dashboard for:', shop.name);
+            
+            // Update shop info in header
+            document.getElementById('shopName').textContent = shop.name;
+            document.getElementById('shopAddress').textContent = `${shop.address}, ${shop.city}, ${shop.state} ${shop.zip_code}`;
+            
+            // Check Stripe status
+            const stripeStatus = document.getElementById('stripeStatus');
+            if (shop.stripe_connected_at) {
+                stripeStatus.innerHTML = '<span style="color: #059669; font-weight: 600;">✅ Stripe Connected</span>';
+            } else {
+                stripeStatus.innerHTML = '<button class="connect-stripe-btn" onclick="connectStripe()">Connect Stripe Account</button>';
+            }
+            
+            // Fetch bookings for this shop from Supabase
+            try {
+                const { data: bookings, error } = await supabase
+                    .from('bookings')
+                    .select('*')
+                    .eq('shop_id', shop.id)
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                console.log(`✅ Loaded ${bookings.length} booking(s)`);
+                
+                // Filter bookings
+                const pendingBookings = bookings.filter(b => b.status === 'pending');
+                const todayBookings = bookings.filter(b => {
+                    const returnDate = new Date(b.return_date);
+                    const today = new Date();
+                    return returnDate.toDateString() === today.toDateString();
+                });
+                
+                // Display bookings
+                displayPendingRequests(pendingBookings);
+                displayTodayReturns(todayBookings);
+                updateStats(bookings);
+                
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+                alert('Error loading bookings. Please refresh the page.');
+            }
         }
-    } else {
-        alert('Please fill in all fields');
-    }
-}
+        
+        function displayPendingRequests(bookings) {
+            const container = document.getElementById('pendingRequests') || document.querySelector('.bookings-pending');
+            if (!container) return;
+            
+            if (bookings.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #64748b; padding: 40px;">No pending requests</p>';
+                return;
+            }
+            
+            container.innerHTML = bookings.map(booking => `
+                <div class="booking-card">
+                    <h3>${booking.customer_name}</h3>
+                    <p><strong>Vehicle:</strong> ${booking.year || ''} ${booking.Make_model || 'N/A'}</p>
+                    <p><strong>License:</strong> ${booking.license_plate || 'N/A'}</p>
+                    <p><strong>Flight:</strong> ${booking.flight_date} at ${booking.flight_time}</p>
+                    <p><strong>Return:</strong> ${booking.return_date}</p>
+                    <p><strong>Services:</strong> ${booking.customer_notes || 'No details provided'}</p>
+                    <div style="margin-top: 15px;">
+                        <button class="btn-accept" onclick="acceptBooking('${booking.id}')">Accept Request</button>
+                        <button class="btn-decline" onclick="declineBooking('${booking.id}')">Decline</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function displayTodayReturns(bookings) {
+            const container = document.getElementById('todayReturns') || document.querySelector('.bookings-today');
+            if (!container) return;
+            
+            if (bookings.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #64748b; padding: 40px;">No returns today</p>';
+                return;
+            }
+            
+            container.innerHTML = bookings.map(booking => `
+                <div class="booking-card">
+                    <h3>${booking.customer_name}</h3>
+                    <p><strong>Vehicle:</strong> ${booking.year || ''} ${booking.Make_model || 'N/A'}</p>
+                    <p><strong>Return Time:</strong> ${booking.arrival_time || 'TBD'}</p>
+                    <p><strong>Status:</strong> ${booking.status}</p>
+                </div>
+            `).join('');
+        }
+        
+        function updateStats(bookings) {
+            // Update stat cards if they exist
+            const totalBookings = bookings.length;
+            const todayBookings = bookings.filter(b => new Date(b.created_at).toDateString() === new Date().toDateString()).length;
+            
+            const totalElem = document.getElementById('totalBookings');
+            const todayElem = document.getElementById('todayBookings');
+            
+            if (totalElem) totalElem.textContent = totalBookings;
+            if (todayElem) todayElem.textContent = todayBookings;
+        }
+        
+        async function acceptBooking(bookingId) {
+            try {
+                const { error } = await supabase
+                    .from('bookings')
+                    .update({ status: 'accepted', updated_at: new Date().toISOString() })
+                    .eq('id', bookingId);
+                
+                if (error) throw error;
+                
+                alert('✅ Booking accepted! Customer will be notified.');
+                
+                // Reload dashboard
+                if (currentShop) {
+                    await loadShopDashboard(currentShop);
+                }
+            } catch (error) {
+                console.error('Error accepting booking:', error);
+                alert('Error accepting booking. Please try again.');
+            }
+        }
+        
+        async function declineBooking(bookingId) {
+            if (!confirm('Are you sure you want to decline this booking?')) return;
+            
+            try {
+                const { error } = await supabase
+                    .from('bookings')
+                    .update({ status: 'declined', updated_at: new Date().toISOString() })
+                    .eq('id', bookingId);
+                
+                if (error) throw error;
+                
+                alert('Booking declined.');
+                
+                // Reload dashboard
+                if (currentShop) {
+                    await loadShopDashboard(currentShop);
+                }
+            } catch (error) {
+                console.error('Error declining booking:', error);
+                alert('Error declining booking. Please try again.');
+            }
+        }
         
         function connectStripe() {
             alert('Redirecting to Stripe Connect...\n\nThis will open Stripe OAuth to connect your bank account for instant payouts.');
