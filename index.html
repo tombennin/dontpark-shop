@@ -463,6 +463,7 @@
             margin-top: 10px;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <!-- Login Screen -->
@@ -472,19 +473,11 @@
                 <h1>DontPark.ai</h1>
                 <p>Shop Partner Portal</p>
             </div>
-            
             <form onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label>Select Your Shop</label>
                     <select id="shopSelect" required>
                         <option value="">Choose your shop...</option>
-                        <option value="victory-nissan">Victory Nissan - Franklin, TN</option>
-                        <option value="firestone-nashville">Firestone Complete Auto - Nashville Airport</option>
-                        <option value="midas-brentwood">Midas - Brentwood</option>
-                        <option value="jiffy-lube-hermitage">Jiffy Lube - Hermitage</option>
-                        <option value="discount-tire">Discount Tire - Madison</option>
-                        <option value="belle-meade-auto">Belle Meade Auto Service</option>
-                        <option value="zekes">Zeke's Automotive Group - Smyrna, TN</option>
                     </select>
                 </div>
                 
@@ -626,6 +619,46 @@
     </div>
     
     <script>
+        // Initialize Supabase
+        const SUPABASE_URL = 'https://uhrhukcovvvbmopvoncr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocmh1a2NvdnZ2Ym1vcHZvbmNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MzIyMzcsImV4cCI6MjA3MDEwODIzN30.Ce69ktLB8h_OMe0H1XpDmRjKZawGlb59ProIs8UEaRw';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Load shops into dropdown
+        async function loadShopsIntoDropdown() {
+            console.log('Loading shops from Supabase...');
+            try {
+                const { data: shops, error } = await supabase
+                    .from('shops')
+                    .select('*')
+                    .eq('status', 'active')
+                    .order('name');
+                
+                if (error) throw error;
+                
+                const dropdown = document.getElementById('shopSelect');
+                
+                // Clear existing options except the first "Choose your shop..."
+                while (dropdown.options.length > 1) {
+                    dropdown.remove(1);
+                }
+                
+                // Add shops from database
+                shops.forEach(shop => {
+                    const option = document.createElement('option');
+                    option.value = shop.id;
+                    option.textContent = `${shop.name} - ${shop.city}, ${shop.state}`;
+                    dropdown.appendChild(option);
+                });
+                
+                console.log(`✅ Loaded ${shops.length} shop(s)`);
+            } catch (error) {
+                console.error('Error loading shops:', error);
+            }
+        }
+        
+        // Call on page load
+        loadShopsIntoDropdown();
         // Shop Database (in production, this would be in your backend)
         const shopDatabase = {
             'zekes': {
