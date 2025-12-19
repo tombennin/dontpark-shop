@@ -851,7 +851,7 @@ async function loadShopDashboard(shop) {
             
             // Fetch bookings for this shop from Supabase
             try {
-                const { data: bookings, error } = await supabase
+                const { data: bookings, error } = await supabaseClient
                     .from('bookings')
                     .select('*')
                     .eq('shop_id', shop.id)
@@ -938,7 +938,7 @@ async function loadShopDashboard(shop) {
         
         async function acceptBooking(bookingId) {
             try {
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('bookings')
                     .update({ status: 'accepted', updated_at: new Date().toISOString() })
                     .eq('id', bookingId);
@@ -961,7 +961,7 @@ async function loadShopDashboard(shop) {
             if (!confirm('Are you sure you want to decline this booking?')) return;
             
             try {
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('bookings')
                     .update({ status: 'declined', updated_at: new Date().toISOString() })
                     .eq('id', bookingId);
