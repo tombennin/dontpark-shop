@@ -927,13 +927,13 @@ async function loadShopDashboard(shop) {
         function updateStats(bookings) {
             // Update stat cards if they exist
             const totalBookings = bookings.length;
-            const todayBookings = bookings.filter(b => new Date(b.created_at).toDateString() === new Date().toDateString()).length;
+            const todayReturns = bookings.filter(b => new Date(b.return_date).toDateString() === new Date().toDateString()).length;
             
             const totalElem = document.getElementById('totalBookings');
             const todayElem = document.getElementById('todayBookings');
             
             if (totalElem) totalElem.textContent = totalBookings;
-            if (todayElem) todayElem.textContent = todayBookings;
+            if (todayElem) todayElem.textContent = todayReturns;
         }
         
         async function acceptBooking(bookingId) {
