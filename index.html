@@ -936,8 +936,18 @@ async function loadShopDashboard(shop) {
             if (todayElem) todayElem.textContent = todayReturns;
         }
         
-        async function acceptBooking(bookingId) {
+   async function acceptBooking(bookingId) {
             try {
+                // Get booking details first
+                const { data: booking, error: fetchError } = await supabaseClient
+                    .from('bookings')
+                    .select('*')
+                    .eq('id', bookingId)
+                    .single();
+                
+                if (fetchError) throw fetchError;
+                
+                // Update status
                 const { error } = await supabaseClient
                     .from('bookings')
                     .update({ status: 'accepted', updated_at: new Date().toISOString() })
@@ -945,9 +955,36 @@ async function loadShopDashboard(shop) {
                 
                 if (error) throw error;
                 
-                alert('✅ Booking accepted! Customer will be notified.');
+                // Send email via Resend
+                try {
+                    await fetch('https://api.resend.com/emails', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer re_Jb34mdVK_8DsQtLNdARPFLgPCsWpDbQgR',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            from: 'DontPark <onboarding@resend.dev>',
+                            to: booking.customer_email,
+                            subject: '✅ Your DontPark Booking is Confirmed!',
+                            html: `
+                                <h2>Great news, ${booking.customer_name}!</h2>
+                                <p>Your booking has been accepted by the shop.</p>
+                                <p><strong>Vehicle:</strong> ${booking.year || ''} ${booking.Make_model || ''}</p>
+                                <p><strong>Drop-off Date:</strong> ${booking.flight_date}</p>
+                                <p><strong>Return Date:</strong> ${booking.return_date}</p>
+                                <p>We'll be in touch with pickup details.</p>
+                                <p>Thanks for choosing DontPark!</p>
+                            `
+                        })
+                    });
+                    console.log('✅ Confirmation email sent');
+                } catch (emailError) {
+                    console.error('Email error:', emailError);
+                }
                 
-                // Reload dashboard
+                alert('✅ Booking accepted! Customer has been notified.');
+                
                 if (currentShop) {
                     await loadShopDashboard(currentShop);
                 }
