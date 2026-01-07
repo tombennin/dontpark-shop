@@ -956,22 +956,25 @@ async function loadShopDashboard(shop) {
                 if (error) throw error;
                 
           // Send email via Netlify function
+              // Send email via Supabase Edge Function
                 try {
-                    await fetch('/.netlify/functions/send-email', {
+                    const emailResponse = await fetch('https://uhrhukcovvvbmopvoncr.supabase.co/functions/v1/send-booking-email', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            to: booking.customer_email,
+                            customerEmail: booking.customer_email,
                             customerName: booking.customer_name,
-                            vehicle: `${booking.year || ''} ${booking.Make_model || ''}`,
+                            shopName: currentShop,
+                            services: booking.customer_notes,
                             flightDate: booking.flight_date,
                             returnDate: booking.return_date,
                             status: 'accepted'
                         })
                     });
-                    console.log('✅ Confirmation email sent');
+                    const emailResult = await emailResponse.json();
+                    console.log('Email result:', emailResult);
                 } catch (emailError) {
                     console.error('Email error:', emailError);
                 }
