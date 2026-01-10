@@ -960,10 +960,9 @@ async function loadShopDashboard(shop) {
                 try {
                     const emailResponse = await fetch('https://uhrhukcovvvbmopvoncr.supabase.co/functions/v1/send-booking-email', {
                         method: 'POST',
-                    headers: {
+                headers: {
     'Content-Type': 'application/json',
-    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocmh1a2NvdnZ2Ym1vcHZvbmNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjYxNTk2NjQsImV4cCI6MjA0MTczNTY2NH0.XPLhXOKPbaCjlJqgn8ky6_lI9sKgFBiGOvYGjyncLmU',
-    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocmh1a2NvdnZ2Ym1vcHZvbmNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjYxNTk2NjQsImV4cCI6MjA0MTczNTY2NH0.XPLhXOKPbaCjlJqgn8ky6_lI9sKgFBiGOvYGjyncLmU'
+    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocmh1a2NvdnZ2Ym1vcHZvbmNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjYxNTk2NjQsImV4cCI6MjA0MTczNTY2NH0.XPLhXOKPbaCjlJqgn8ky6_lI9sKgFBiGOvYGjyncLmU'
 },
                         body: JSON.stringify({
                             customerEmail: booking.customer_email,
