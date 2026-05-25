@@ -891,7 +891,7 @@ updateStats(bookings);
     container.innerHTML = bookings.map(booking => `
         <div class="booking-card">
             <h3>${booking.customer_name}</h3>
-            <p><strong>Vehicle:</strong> ${booking.year || ''} ${booking.Make_model || 'N/A'}</p>
+           <p><strong>Vehicle:</strong> ${booking.Make_model || 'N/A'}</p>
             <p><strong>Drop-off:</strong> ${booking.flight_date} at ${booking.flight_time}</p>
             <p><strong>Return:</strong> ${booking.return_date}</p>
             <p><strong>Services:</strong> ${booking.customer_notes || 'No details'}</p>
