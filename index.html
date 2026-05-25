@@ -863,23 +863,42 @@ async function loadShopDashboard(shop) {
                 
                 // Filter bookings
                 const pendingBookings = bookings.filter(b => b.status === 'pending');
+                const upcomingBookings = bookings.filter(b => b.status === 'accepted');
                 const todayBookings = bookings.filter(b => {
                     const returnDate = new Date(b.return_date);
                     const today = new Date();
                     return returnDate.toDateString() === today.toDateString();
                 });
                 
-                // Display bookings
-                displayPendingRequests(pendingBookings);
-                displayTodayReturns(todayBookings);
-                updateStats(bookings);
+          displayTodayReturns(todayBookings);
+displayUpcomingBookings(upcomingBookings);
+updateStats(bookings);
                 
             } catch (error) {
                 console.error('Error loading bookings:', error);
                 alert('Error loading bookings. Please refresh the page.');
             }
         }
-        
+        function displayUpcomingBookings(bookings) {
+    const container = document.getElementById('upcomingBookings');
+    if (!container) return;
+    
+    if (bookings.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🚗</div><p>No upcoming bookings</p></div>';
+        return;
+    }
+    
+    container.innerHTML = bookings.map(booking => `
+        <div class="booking-card">
+            <h3>${booking.customer_name}</h3>
+            <p><strong>Vehicle:</strong> ${booking.year || ''} ${booking.Make_model || 'N/A'}</p>
+            <p><strong>Drop-off:</strong> ${booking.flight_date} at ${booking.flight_time}</p>
+            <p><strong>Return:</strong> ${booking.return_date}</p>
+            <p><strong>Services:</strong> ${booking.customer_notes || 'No details'}</p>
+            <p><strong>Status:</strong> ✅ Accepted</p>
+        </div>
+    `).join('');
+}
         function displayPendingRequests(bookings) {
             const container = document.getElementById('pendingRequests') || document.querySelector('.bookings-pending');
             if (!container) return;
