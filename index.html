@@ -870,7 +870,8 @@ async function loadShopDashboard(shop) {
                     return returnDate.toDateString() === today.toDateString();
                 });
                 
-          displayTodayReturns(todayBookings);
+        displayPendingRequests(pendingBookings);
+displayTodayReturns(todayBookings);
 displayUpcomingBookings(upcomingBookings);
 updateStats(bookings);
                 
