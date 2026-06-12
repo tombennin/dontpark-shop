@@ -864,11 +864,10 @@ async function loadShopDashboard(shop) {
                 // Filter bookings
                 const pendingBookings = bookings.filter(b => b.status === 'pending');
                 const upcomingBookings = bookings.filter(b => b.status === 'accepted');
-                const todayBookings = bookings.filter(b => {
-                    const returnDate = new Date(b.return_date);
-                    const today = new Date();
-                    return returnDate.toDateString() === today.toDateString();
-                });
+             const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD, local time
+                const todayBookings = bookings.filter(b =>
+                    (b.return_date || '').slice(0, 10) === todayStr
+                );
                 
         displayPendingRequests(pendingBookings);
 displayTodayReturns(todayBookings);
