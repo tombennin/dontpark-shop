@@ -573,6 +573,17 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Past Bookings -->
+            <div class="panel">
+                <h2>✅ Past Bookings</h2>
+                <div id="pastBookings" class="bookings-list">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📁</div>
+                        <p>No past bookings</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -863,7 +874,13 @@ async function loadShopDashboard(shop) {
                 
                 // Filter bookings
                 const pendingBookings = bookings.filter(b => b.status === 'pending');
-                const upcomingBookings = bookings.filter(b => b.status === 'accepted');
+                const _todayStr = new Date().toLocaleDateString('en-CA');
+                const upcomingBookings = bookings.filter(b =>
+                    b.status === 'accepted' && (b.return_date || '').slice(0, 10) > _todayStr
+                );
+                const pastBookings = bookings.filter(b =>
+                    b.status === 'accepted' && (b.return_date || '').slice(0, 10) < _todayStr
+                );
              const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD, local time
                 const todayBookings = bookings.filter(b =>
                     (b.return_date || '').slice(0, 10) === todayStr
@@ -872,6 +889,7 @@ async function loadShopDashboard(shop) {
         displayPendingRequests(pendingBookings);
 displayTodayReturns(todayBookings);
 displayUpcomingBookings(upcomingBookings);
+displayPastBookings(pastBookings);
 updateStats(bookings);
                 
             } catch (error) {
@@ -899,6 +917,26 @@ updateStats(bookings);
         </div>
     `).join('');
 }
+        function displayPastBookings(bookings) {
+            const container = document.getElementById('pastBookings');
+            if (!container) return;
+
+            if (bookings.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📁</div><p>No past bookings</p></div>';
+                return;
+            }
+
+            container.innerHTML = bookings.map(booking => `
+                <div class="booking-card" style="opacity: 0.65;">
+                    <h3>${booking.customer_name}</h3>
+                    <p><strong>Vehicle:</strong> ${booking.Make_model || 'N/A'}</p>
+                    <p><strong>Returned:</strong> ${booking.return_date}</p>
+                    <p><strong>Services:</strong> ${booking.customer_notes || 'No details'}</p>
+                    <p><strong>Status:</strong> ✅ Completed</p>
+                </div>
+            `).join('');
+        }
+
         function displayPendingRequests(bookings) {
             const container = document.getElementById('pendingRequests') || document.querySelector('.bookings-pending');
             if (!container) return;
