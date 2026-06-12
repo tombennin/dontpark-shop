@@ -925,7 +925,7 @@ updateStats(bookings);
         }
         
         function displayTodayReturns(bookings) {
-            const container = document.getElementById('todayReturns') || document.querySelector('.bookings-today');
+       const container = document.getElementById('todayBookings') || document.querySelector('.bookings-today');
             if (!container) return;
             
             if (bookings.length === 0) {
