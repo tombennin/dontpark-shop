@@ -943,16 +943,23 @@ updateStats(bookings);
             `).join('');
         }
         
-        function updateStats(bookings) {
-            // Update stat cards if they exist
-            const totalBookings = bookings.length;
-            const todayReturns = bookings.filter(b => new Date(b.return_date).toDateString() === new Date().toDateString()).length;
-            
-            const totalElem = document.getElementById('totalBookings');
-            const todayElem = document.getElementById('todayBookings');
-            
-            if (totalElem) totalElem.textContent = totalBookings;
-            if (todayElem) todayElem.textContent = todayReturns;
+     function updateStats(bookings) {
+            const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD, local
+
+            const todayReturnsCount = bookings.filter(b =>
+                (b.return_date || '').slice(0, 10) === todayStr
+            ).length;
+
+            // Active = accepted and not yet returned (car is currently at the shop)
+            const activeCount = bookings.filter(b =>
+                b.status === 'accepted' && (b.return_date || '').slice(0, 10) >= todayStr
+            ).length;
+
+            const activeElem = document.getElementById('activeBookings');
+            const todayElem  = document.getElementById('todayReturns'); // the NUMBER card
+
+            if (activeElem) activeElem.textContent = activeCount;
+            if (todayElem)  todayElem.textContent = todayReturnsCount;
         }
         
    async function acceptBooking(bookingId) {
