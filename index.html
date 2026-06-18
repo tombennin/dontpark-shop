@@ -897,23 +897,90 @@ updateStats(bookings);
                 alert('Error loading bookings. Please refresh the page.');
             }
         }
-        function displayUpcomingBookings(bookings) {
+   // ---- Date / time helpers for booking cards ----
+const DP_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// "2026-06-18" -> "Jun 18"  (parsed by hand so the date never shifts a day from timezones)
+function formatShortDate(dateStr) {
+    if (!dateStr) return 'N/A';
+    const p = String(dateStr).slice(0, 10).split('-');
+    if (p.length !== 3) return dateStr;
+    const mon = DP_MONTHS[parseInt(p[1], 10) - 1] || '';
+    return `${mon} ${parseInt(p[2], 10)}`;
+}
+
+// "09:00:00" -> "9:00a"
+function formatTime(timeStr) {
+    if (!timeStr) return 'TBD';
+    const t = String(timeStr).split(':');
+    let h = parseInt(t[0], 10);
+    const m = t[1] || '00';
+    const ampm = h < 12 ? 'a' : 'p';
+    if (h === 0) h = 12; else if (h > 12) h -= 12;
+    return `${h}:${m}${ampm}`;
+}
+
+// Flight time -> when the customer must arrive at the shop.
+// Mirrors the customer email: flight time minus 2 hr airport buffer, minus the shop's
+// drive time, minus 5 min to load. If you change those numbers in send-booking-email,
+// change them here too, or the dashboard and the email will disagree.
+function shopArrivalTime(timeStr) {
+    if (!timeStr) return 'TBD';
+    const t = String(timeStr).split(':');
+    let mins = (parseInt(t[0], 10) * 60) + parseInt(t[1] || '0', 10);
+    const buffer = 120;
+    const drive = parseInt((currentShop && currentShop.drive_time_to_airport) || 0, 10);
+    const load = 5;
+    mins = mins - buffer - drive - load;
+    if (mins < 0) mins += 24 * 60;
+    let h = Math.floor(mins / 60);
+    const m = String(mins % 60).padStart(2, '0');
+    const ampm = h < 12 ? 'a' : 'p';
+    if (h === 0) h = 12; else if (h > 12) h -= 12;
+    return `${h}:${m}${ampm}`;
+}
+
+// Save a shop note onto the booking (writes to bookings.internal_notes)
+async function saveBookingNote(bookingId) {
+    const box = document.getElementById(`notes-${bookingId}`);
+    const status = document.getElementById(`notes-status-${bookingId}`);
+    if (!box) return;
+    try {
+        const { error } = await supabaseClient
+            .from('bookings')
+            .update({ internal_notes: box.value, updated_at: new Date().toISOString() })
+            .eq('id', bookingId);
+        if (error) throw error;
+        if (status) { status.textContent = '✅ Saved'; status.style.color = '#22543d'; setTimeout(() => { status.textContent = ''; }, 2500); }
+    } catch (err) {
+        console.error('Error saving note:', err);
+        if (status) { status.textContent = '⚠️ Save failed'; status.style.color = '#c53030'; }
+    }
+}
+
+function displayUpcomingBookings(bookings) {
     const container = document.getElementById('upcomingBookings');
     if (!container) return;
-    
     if (bookings.length === 0) {
         container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🚗</div><p>No upcoming bookings</p></div>';
         return;
     }
-    
     container.innerHTML = bookings.map(booking => `
         <div class="booking-card">
             <h3>${booking.customer_name}</h3>
-           <p><strong>Vehicle:</strong> ${booking.Make_model || 'N/A'}</p>
-            <p><strong>Drop-off:</strong> ${booking.flight_date} at ${booking.flight_time}</p>
-            <p><strong>Return:</strong> ${booking.return_date}</p>
+            <p><strong>Vehicle:</strong> ${booking.Make_model || 'N/A'}</p>
+            <p><strong>Customer arrives shop:</strong> ${formatShortDate(booking.flight_date)} at ${shopArrivalTime(booking.flight_time)}</p>
+            <p><strong>Flight departs:</strong> ${formatTime(booking.flight_time)}</p>
+            <p><strong>Return:</strong> ${formatShortDate(booking.return_date)}</p>
             <p><strong>Services:</strong> ${booking.customer_notes || 'No details'}</p>
             <p><strong>Status:</strong> ✅ Accepted</p>
+            <div class="booking-notes">
+                <textarea id="notes-${booking.id}" class="notes-input" placeholder="Add a note — e.g., Cole Jepsen 615.630.3266, DontPark providing ride to airport">${booking.internal_notes || ''}</textarea>
+                <div>
+                    <button class="btn-save-note" onclick="saveBookingNote('${booking.id}')">Save Note</button>
+                    <span id="notes-status-${booking.id}" class="notes-status"></span>
+                </div>
+            </div>
         </div>
     `).join('');
 }
