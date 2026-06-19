@@ -985,25 +985,24 @@ function displayUpcomingBookings(bookings) {
         </div>
     `).join('');
 }
-        function displayPastBookings(bookings) {
-            const container = document.getElementById('pastBookings');
-            if (!container) return;
-
-            if (bookings.length === 0) {
-                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📁</div><p>No past bookings</p></div>';
-                return;
-            }
-
-            container.innerHTML = bookings.map(booking => `
-                <div class="booking-card" style="opacity: 0.65;">
-                    <h3>${booking.customer_name}</h3>
-                    <p><strong>Vehicle:</strong> ${booking.Make_model || 'N/A'}</p>
-                    <p><strong>Returned:</strong> ${booking.return_date}</p>
-                    <p><strong>Services:</strong> ${booking.customer_notes || 'No details'}</p>
-                    <p><strong>Status:</strong> ✅ Completed</p>
-                </div>
-            `).join('');
-        }
+function displayPastBookings(bookings) {
+    const container = document.getElementById('pastBookings');
+    if (!container) return;
+    if (bookings.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📁</div><p>No past bookings</p></div>';
+        return;
+    }
+    container.innerHTML = bookings.map(booking => `
+        <div class="booking-card" style="opacity: 0.65;">
+            <h3>${booking.customer_name}</h3>
+            <p><strong>Vehicle:</strong> ${booking.Make_model || 'N/A'}</p>
+            <p><strong>Return:</strong> ${formatShortDate(booking.return_date)}</p>
+            <p><strong>Services:</strong> ${booking.customer_notes || 'No details'}</p>
+            <p><strong>Status:</strong> ${booking.status === 'cancelled' ? '🚫 Cancelled' : '✅ Completed'}</p>
+            ${booking.internal_notes ? `<p><strong>Notes:</strong> ${booking.internal_notes}</p>` : ''}
+        </div>
+    `).join('');
+}
 
         function displayPendingRequests(bookings) {
             const container = document.getElementById('pendingRequests') || document.querySelector('.bookings-pending');
