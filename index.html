@@ -807,44 +807,51 @@
         let currentShop = null;
         let currentBooking = null;
       
- async function handleLogin(event) {
-            event.preventDefault();
-            
-            const shopId = document.getElementById('shopSelect').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            if (!shopId || !email || !password) {
-                alert('Please fill in all fields');
-                return;
-            }
-            
-            try {
-                // Fetch shop details from Supabase
-                const { data: shop, error } = await supabaseClient
-                    .from('shops')
-                    .select('*')
-                    .eq('id', shopId)
-                    .single();
-                
-                if (error) throw error;
-                
-                // Store logged-in shop
-                localStorage.setItem('currentShopId', shopId);
-                currentShop = shop;
-                
-                // Hide login, show dashboard
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('dashboard').classList.add('active');
-                
-                // Load dashboard with real data
-                await loadShopDashboard(shop);
-                
-            } catch (error) {
-                console.error('Login error:', error);
-                alert('Login failed. Please try again.');
-            }
-        }  
+async function handleLogin(event) {
+    event.preventDefault();
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    if (!email || !password) {
+        alert('Please enter your email and password');
+        return;
+    }
+
+    try {
+        // 1) Real authentication — password is actually checked now
+        const { data: authData, error: authError } =
+            await supabaseClient.auth.signInWithPassword({ email, password });
+
+        if (authError) {
+            alert('Login failed: incorrect email or password.');
+            return;
+        }
+
+        // 2) Find the shop linked to THIS authenticated user
+        const { data: shop, error: shopError } = await supabaseClient
+            .from('shops')
+            .select('*')
+            .eq('auth_user_id', authData.user.id)
+            .single();
+
+        if (shopError || !shop) {
+            alert('This login is not linked to a shop yet.');
+            return;
+        }
+
+        // 3) Store and open the dashboard
+        localStorage.setItem('currentShopId', shop.id);
+        currentShop = shop;
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboard').classList.add('active');
+        await loadShopDashboard(shop);
+
+    } catch (error) {
+        console.error('Login error:', error);
+        alert('Login failed. Please try again.');
+    }
+}
 async function loadShopDashboard(shop) {
             console.log('Loading dashboard for:', shop.name);
             
