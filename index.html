@@ -1098,6 +1098,7 @@ body: JSON.stringify({
                             customerEmail: booking.customer_email,
                             customerName: booking.customer_name,
                             shopName: currentShop.name,
+                            shopAddress: currentShop.address + ', ' + currentShop.city,
                             services: booking.customer_notes,
                             flightDate: booking.flight_date,
                             flightTime: booking.flight_time,
